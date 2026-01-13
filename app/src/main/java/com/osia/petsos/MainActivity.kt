@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import com.osia.petsos.ui.navigation.AppNavigation
 import com.osia.petsos.ui.theme.PetSOSTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -16,7 +17,12 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Habilitar edge-to-edge con configuración correcta
         enableEdgeToEdge()
+
+        // Configurar para que el contenido se dibuje detrás de las barras del sistema
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
             PetSOSTheme {

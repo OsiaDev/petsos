@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,25 +16,23 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.osia.petsos.R
 import com.osia.petsos.ui.theme.PetSOSTheme
-
-data class Feature(
-    val icon: ImageVector,
-    val title: String,
-    val description: String
-)
+import kotlin.math.absoluteValue
 
 @Composable
 fun WelcomeScreen(
@@ -58,15 +57,44 @@ fun WelcomeScreen(
         )
     )
 
+    // Estado del LazyRow para rastrear el desplazamiento
+    val listState = rememberLazyListState()
+    val configuration = LocalConfiguration.current
+    val screenWidth = configuration.screenWidthDp.dp
+
+    // Ancho de cada tarjeta (260dp) + espacio entre ellas (16dp) + padding inicial (16dp)
+    val cardWidth = 260.dp + 16.dp
+
+    // Calcular el índice actual basado en el desplazamiento
+    val currentIndex by remember {
+        derivedStateOf {
+            val layoutInfo = listState.layoutInfo
+            val visibleItemsInfo = layoutInfo.visibleItemsInfo
+
+            if (visibleItemsInfo.isEmpty()) {
+                0
+            } else {
+                val centerOffset = layoutInfo.viewportStartOffset + layoutInfo.viewportSize.width / 2
+                val centerItem = visibleItemsInfo.minByOrNull {
+                    (it.offset + it.size / 2 - centerOffset).absoluteValue
+                }
+                centerItem?.index ?: 0
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
+            // Agregar padding para los insets del sistema
+            .windowInsetsPadding(WindowInsets.systemBars)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = 140.dp) // Espacio para los botones
         ) {
             // Hero Image
             Card(
@@ -115,6 +143,7 @@ fun WelcomeScreen(
 
             // Features Carousel
             LazyRow(
+                state = listState,
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
@@ -126,7 +155,7 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Page Indicators
+            // Page Indicators - Dinámicos basados en currentIndex
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -134,39 +163,36 @@ fun WelcomeScreen(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(
-                    modifier = Modifier
-                        .width(24.dp)
-                        .height(8.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MaterialTheme.colorScheme.primary)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFD1D5DB))
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(8.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFD1D5DB))
-                )
-            }
+                features.forEachIndexed { index, _ ->
+                    val isSelected = currentIndex == index
 
-            Spacer(modifier = Modifier.weight(1f))
+                    Box(
+                        modifier = Modifier
+                            .width(if (isSelected) 24.dp else 8.dp)
+                            .height(8.dp)
+                            .clip(if (isSelected) RoundedCornerShape(4.dp) else CircleShape)
+                            .background(
+                                if (isSelected)
+                                    MaterialTheme.colorScheme.primary
+                                else
+                                    Color(0xFFD1D5DB)
+                            )
+                    )
+
+                    if (index < features.size - 1) {
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                }
+            }
         }
 
-        // Bottom Buttons - Fixed at bottom
+        // Bottom Buttons - Fixed at bottom con padding para los insets
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
-                .padding(16.dp)
-                .padding(bottom = 16.dp),
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Get Started Button

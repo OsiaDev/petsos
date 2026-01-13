@@ -4,59 +4,71 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryPurple,
-    onPrimary = Color.White,
-    primaryContainer = Color(0xFFE8DEFF),
-    onPrimaryContainer = Color(0xFF21005D),
+    onPrimary = OnPrimary,
+    primaryContainer = PrimaryContainer,
+    onPrimaryContainer = OnPrimaryContainer,
 
-    secondary = Color(0xFF625B71),
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFE8DEF8),
-    onSecondaryContainer = Color(0xFF1D192B),
+    secondary = Secondary,
+    onSecondary = OnSecondary,
+    secondaryContainer = SecondaryContainer,
+    onSecondaryContainer = OnSecondaryContainer,
 
-    tertiary = Color(0xFF7D5260),
-    onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFFFD8E4),
-    onTertiaryContainer = Color(0xFF31111D),
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+    tertiaryContainer = TertiaryContainer,
+    onTertiaryContainer = OnTertiaryContainer,
 
-    error = Color(0xFFBA1A1A),
-    onError = Color.White,
-    errorContainer = Color(0xFFFFDAD6),
-    onErrorContainer = Color(0xFF410002),
+    error = ErrorLight,
+    onError = OnErrorLight,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
 
     background = BackgroundLight,
-    onBackground = Color(0xFF1C1B1F),
+    onBackground = OnBackgroundLight,
 
     surface = SurfaceLight,
-    onSurface = Color(0xFF1C1B1F),
-    surfaceVariant = Color(0xFFE7E0EC),
-    onSurfaceVariant = Color(0xFF49454F),
+    onSurface = OnSurfaceLight,
+    surfaceVariant = SurfaceVariantLight,
+    onSurfaceVariant = OnSurfaceVariantLight,
 
-    outline = Color(0xFF79747E),
-    outlineVariant = Color(0xFFCAC4D0),
+    outline = OutlineLight,
+    outlineVariant = OutlineVariantLight,
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryPurpleLight,
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
+    onPrimary = OnPrimaryDark,
+    primaryContainer = PrimaryContainerDark,
+    onPrimaryContainer = OnPrimaryContainerDark,
 
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
+    secondary = SecondaryDark,
+    onSecondary = OnSecondaryDark,
+    secondaryContainer = SecondaryContainerDark,
+    onSecondaryContainer = OnSecondaryContainerDark,
+
+    tertiary = Tertiary,
+    onTertiary = OnTertiary,
+    tertiaryContainer = TertiaryContainer,
+    onTertiaryContainer = OnTertiaryContainer,
+
+    error = ErrorDark,
+    onError = OnErrorDark,
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
 
     background = BackgroundDark,
-    onBackground = Color(0xFFE6E1E5),
+    onBackground = OnBackgroundDark,
 
     surface = SurfaceDark,
-    onSurface = Color(0xFFE6E1E5),
-    surfaceVariant = Color(0xFF49454F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
+    onSurface = OnSurfaceDark,
+    surfaceVariant = SurfaceVariantDark,
+    onSurfaceVariant = OnSurfaceVariantDark,
+
+    outline = OutlineDark,
+    outlineVariant = OutlineVariantDark,
 )
 
 @Composable
