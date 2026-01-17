@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.osia.petsos.ui.welcome.WelcomeScreen
+import com.osia.petsos.ui.home.HomeScreen
 
 /**
  * Composable principal de navegación de la aplicación
@@ -24,7 +25,7 @@ fun AppNavigation(
         composable(route = Screen.Welcome.route) {
             WelcomeScreen(
                 onGetStartedClick = {
-                    navController.navigate(Screen.Register.route) {
+                    navController.navigate(Screen.Home.route) {
                         // Evitar volver a la pantalla de bienvenida
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
@@ -63,10 +64,25 @@ fun AppNavigation(
 
         // Pantalla principal (Home)
         composable(route = Screen.Home.route) {
-            // TODO: Implementar HomeScreen
-            WelcomeScreen(
-                onGetStartedClick = { },
-                onLoginClick = { }
+            HomeScreen(
+                onNavigateToProfile = {
+                    navController.navigate(Screen.Profile.route)
+                },
+                onNavigateToAlerts = {
+                    // TODO: Implementar pantalla de alertas
+                },
+                onNavigateToMessages = {
+                    // TODO: Implementar pantalla de mensajes
+                },
+                onNavigateToAddPet = {
+                    navController.navigate(Screen.ReportLost.route)
+                },
+                onContactOwner = { petId ->
+                    // TODO: Implementar lógica para contactar al dueño
+                },
+                onViewDetails = { petId ->
+                    navController.navigate(Screen.PetDetail.createRoute(petId))
+                }
             )
         }
 
