@@ -45,6 +45,8 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics"}
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore"}
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage"}
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth"}
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "20.7.0" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

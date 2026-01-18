@@ -47,17 +47,21 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit = {},
     onNavigateToAlerts: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
-    onNavigateToAddPet: () -> Unit = {},
+    onNavigateToReportLost: () -> Unit = {},
+    onNavigateToReportFound: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
     onContactOwner: (String) -> Unit = {},
     onViewDetails: (String) -> Unit = {}
 ) {
-
     // Obtain ViewModel if not provided (using hiltViewModel() inside body)
     val homeViewModel: HomeViewModel = viewModel
 
     val uiState by homeViewModel.uiState.collectAsState()
     val searchQuery by homeViewModel.searchQuery.collectAsState()
     val selectedFilter by homeViewModel.selectedFilter.collectAsState()
+    val currentUser by homeViewModel.currentUser.collectAsState(initial = null)
+
+    var showReportTypeSheet by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -137,13 +141,33 @@ fun HomeScreen(
                 when (tab) {
                     BottomNavItem.HOME -> { /* Already here */ }
                     BottomNavItem.ALERTS -> onNavigateToAlerts()
-                    BottomNavItem.ADD -> onNavigateToAddPet()
+                    BottomNavItem.ADD -> { 
+                        if (currentUser != null) {
+                            showReportTypeSheet = true 
+                        } else {
+                            onNavigateToLogin()
+                        }
+                    }
                     BottomNavItem.MESSAGES -> onNavigateToMessages()
                     BottomNavItem.PROFILE -> onNavigateToProfile()
                 }
             },
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+
+        if (showReportTypeSheet) {
+            com.osia.petsos.ui.report.ReportTypeBottomSheet(
+                onDismissRequest = { showReportTypeSheet = false },
+                onReportLostClick = {
+                    showReportTypeSheet = false
+                    onNavigateToReportLost()
+                },
+                onReportFoundClick = {
+                    showReportTypeSheet = false
+                    onNavigateToReportFound()
+                }
+            )
+        }
     }
 
 }
@@ -508,7 +532,11 @@ fun BottomNavigationBar(
 
         // Floating Action Button (centered)
         FloatingActionButton(
-            onClick = { onTabSelected(BottomNavItem.ADD) },
+            onClick = { 
+               // We reuse the onTabSelected logic which is passed down from HomeScreen
+               // effectively this calls the callback we defined above
+               onTabSelected(BottomNavItem.ADD) 
+            },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .offset(y = (-24).dp)

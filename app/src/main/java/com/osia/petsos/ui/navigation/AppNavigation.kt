@@ -7,6 +7,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.osia.petsos.ui.welcome.WelcomeScreen
 import com.osia.petsos.ui.home.HomeScreen
+import com.osia.petsos.ui.report.ReportFoundScreen
+import com.osia.petsos.ui.report.ReportLostScreen
 
 /**
  * Composable principal de navegación de la aplicación
@@ -74,8 +76,11 @@ fun AppNavigation(
                 onNavigateToMessages = {
                     // TODO: Implementar pantalla de mensajes
                 },
-                onNavigateToAddPet = {
+                onNavigateToReportLost = {
                     navController.navigate(Screen.ReportLost.route)
+                },
+                onNavigateToReportFound = {
+                    navController.navigate(Screen.ReportFound.route)
                 },
                 onContactOwner = { petId ->
                     // TODO: Implementar lógica para contactar al dueño
@@ -88,12 +93,12 @@ fun AppNavigation(
 
         // Pantalla para reportar mascota perdida
         composable(route = Screen.ReportLost.route) {
-            // TODO: Implementar ReportLostScreen
+            com.osia.petsos.ui.report.ReportLostScreen()
         }
 
         // Pantalla para reportar mascota encontrada
         composable(route = Screen.ReportFound.route) {
-            // TODO: Implementar ReportFoundScreen
+            com.osia.petsos.ui.report.ReportFoundScreen()
         }
 
         // Pantalla de detalle de mascota

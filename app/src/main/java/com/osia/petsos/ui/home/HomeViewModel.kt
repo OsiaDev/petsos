@@ -2,8 +2,7 @@ package com.osia.petsos.ui.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.osia.petsos.domain.model.AdvertisementType
-import com.osia.petsos.domain.model.PetAd
+import com.osia.petsos.domain.repository.AuthRepository
 import com.osia.petsos.domain.repository.PetRepository
 import com.osia.petsos.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,12 +15,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: PetRepository
+    private val repository: PetRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
+    val currentUser = authRepository.currentUser
+    
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 

@@ -24,6 +24,14 @@ object AppModule {
 
     @Provides
     @Singleton
+    fun provideFirebaseAuth(): com.google.firebase.auth.FirebaseAuth = com.google.firebase.auth.FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
     fun providePetRepository(repository: PetRepositoryImpl): PetRepository = repository
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(repository: com.osia.petsos.data.repository.AuthRepositoryImpl): com.osia.petsos.domain.repository.AuthRepository = repository
 
 }
