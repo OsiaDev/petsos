@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.ksp)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.googe.service)
 }
 
 android {
@@ -68,6 +69,9 @@ dependencies {
 
     // Coil for Image Loading
     implementation(libs.coil.compose)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
