@@ -1,6 +1,8 @@
 package com.osia.petsos.ui.home
 
-import androidx.compose.foundation.Image
+
+import androidx.compose.ui.tooling.preview.Preview
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,13 +19,19 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil.compose.AsyncImage
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.osia.petsos.R
+import com.osia.petsos.domain.model.AdvertisementType
+import com.osia.petsos.domain.model.PetAd
 import com.osia.petsos.ui.theme.BackgroundLight
 import com.osia.petsos.ui.theme.PetSOSTheme
 import com.osia.petsos.ui.theme.PrimaryPurple
@@ -35,6 +43,7 @@ import com.osia.petsos.ui.theme.TextSecondary
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToProfile: () -> Unit = {},
     onNavigateToAlerts: () -> Unit = {},
     onNavigateToMessages: () -> Unit = {},
@@ -42,8 +51,13 @@ fun HomeScreen(
     onContactOwner: (String) -> Unit = {},
     onViewDetails: (String) -> Unit = {}
 ) {
-    var selectedFilter by remember { mutableStateOf(PetFilter.ALL) }
-    var searchQuery by remember { mutableStateOf("") }
+
+    // Obtain ViewModel if not provided (using hiltViewModel() inside body)
+    val homeViewModel: HomeViewModel = viewModel
+
+    val uiState by homeViewModel.uiState.collectAsState()
+    val searchQuery by homeViewModel.searchQuery.collectAsState()
+    val selectedFilter by homeViewModel.selectedFilter.collectAsState()
 
     Box(
         modifier = Modifier
@@ -68,7 +82,7 @@ fun HomeScreen(
                     // Search Bar
                     SearchBar(
                         query = searchQuery,
-                        onQueryChange = { searchQuery = it },
+                        onQueryChange = homeViewModel::onSearchQueryChange,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -77,27 +91,43 @@ fun HomeScreen(
                     // Filter Chips
                     FilterChips(
                         selectedFilter = selectedFilter,
-                        onFilterSelected = { selectedFilter = it },
+                        onFilterSelected = homeViewModel::onFilterSelected,
                         modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp, top = 4.dp)
                     )
                 }
             }
 
-            // Pet List con padding bottom para el bottom bar
-            PetList(
-                pets = getSamplePets().filter { pet ->
-                    when (selectedFilter) {
-                        PetFilter.ALL -> true
-                        PetFilter.LOST -> pet.status == PetStatus.LOST
-                        PetFilter.FOUND -> pet.status == PetStatus.FOUND
+            // Content
+            when (val state = uiState) {
+                is HomeUiState.Loading -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = PrimaryPurple)
                     }
-                },
-                onContactOwner = onContactOwner,
-                onViewDetails = onViewDetails,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            )
+                }
+                is HomeUiState.Error -> {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(text = "Error: ${state.message}", color = Color.Red)
+                    }
+                }
+                is HomeUiState.Success -> {
+                    val filteredPets = state.pets.filter { pet ->
+                        (selectedFilter == PetFilter.ALL ||
+                                (selectedFilter == PetFilter.LOST && pet.type == AdvertisementType.LOST) ||
+                                (selectedFilter == PetFilter.FOUND && pet.type == AdvertisementType.FOUND)) &&
+                                (searchQuery.isBlank() || pet.name?.contains(searchQuery, ignoreCase = true) == true ||
+                                        pet.breed?.contains(searchQuery, ignoreCase = true) == true)
+                    }
+
+                    PetList(
+                        pets = filteredPets,
+                        onContactOwner = onContactOwner,
+                        onViewDetails = onViewDetails,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    )
+                }
+            }
         }
 
         // Bottom Navigation Bar - Fixed at bottom
@@ -115,6 +145,7 @@ fun HomeScreen(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -250,7 +281,7 @@ fun FilterChips(
 
 @Composable
 fun PetList(
-    pets: List<Pet>,
+    pets: List<PetAd>,
     onContactOwner: (String) -> Unit,
     onViewDetails: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -277,7 +308,7 @@ fun PetList(
 
 @Composable
 fun PetCard(
-    pet: Pet,
+    pet: PetAd,
     onContactOwner: () -> Unit,
     onViewDetails: () -> Unit
 ) {
@@ -303,14 +334,33 @@ fun PetCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(16f / 9f) // aspect-video del HTML
+                    .aspectRatio(16f / 9f)
+                    .background(Color.LightGray)
             ) {
-                Image(
-                    painter = painterResource(id = pet.imageRes),
-                    contentDescription = pet.imageAlt,
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                val imageUrl = pet.photoUrls.firstOrNull()?.let { path ->
+                    // Construct HTTP URL from path if needed, or use directly if it's already a URL.
+                    // Assuming path is like "pets/123/thumb/abc.webp"
+                    if (path.startsWith("http")) path
+                    else "https://firebasestorage.googleapis.com/v0/b/petsos-project-app.firebasestorage.app/o/${Uri.encode(path)}?alt=media"
+                }
+
+                if (imageUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build(),
+                        contentDescription = "Pet Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = R.drawable.ic_launcher_foreground) // Placeholder
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Pets, contentDescription = null, tint = Color.Gray)
+                    }
+                }
 
                 // Status Badge
                 Surface(
@@ -318,13 +368,13 @@ fun PetCard(
                         .padding(12.dp)
                         .align(Alignment.TopStart),
                     shape = RoundedCornerShape(6.dp),
-                    color = when (pet.status) {
-                        PetStatus.LOST -> SecondaryOrange.copy(alpha = 0.9f)
-                        PetStatus.FOUND -> PrimaryPurple.copy(alpha = 0.9f)
+                    color = when (pet.type) {
+                        AdvertisementType.LOST -> SecondaryOrange.copy(alpha = 0.9f)
+                        AdvertisementType.FOUND -> PrimaryPurple.copy(alpha = 0.9f)
                     }
                 ) {
                     Text(
-                        text = pet.status.label,
+                        text = pet.type.name,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.Bold,
@@ -344,7 +394,7 @@ fun PetCard(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = pet.name,
+                    text = pet.name ?: "Unknown",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary,
@@ -355,13 +405,13 @@ fun PetCard(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = pet.breed,
+                        text = pet.breed ?: "Unknown Breed",
                         style = MaterialTheme.typography.bodyLarge,
                         color = TextSecondary
                     )
 
                     Text(
-                        text = pet.locationTime,
+                        text = pet.location.address,
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
@@ -371,7 +421,7 @@ fun PetCard(
 
                 // Action Button
                 Button(
-                    onClick = if (pet.status == PetStatus.LOST) onContactOwner else onViewDetails,
+                    onClick = if (pet.type == AdvertisementType.LOST) onContactOwner else onViewDetails,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),
@@ -384,7 +434,7 @@ fun PetCard(
                     )
                 ) {
                     Text(
-                        text = if (pet.status == PetStatus.LOST) "Contact Owner" else "View Details",
+                        text = if (pet.type == AdvertisementType.LOST) "Contact Owner" else "View Details",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold
                         )
@@ -514,27 +564,11 @@ fun BottomNavButton(
     }
 }
 
-// Data Classes and Enums
 enum class PetFilter(val label: String) {
     ALL("All"),
     LOST("Lost"),
     FOUND("Found")
 }
-
-enum class PetStatus(val label: String) {
-    LOST("LOST"),
-    FOUND("FOUND")
-}
-
-data class Pet(
-    val id: String,
-    val name: String,
-    val breed: String,
-    val locationTime: String,
-    val status: PetStatus,
-    val imageRes: Int,
-    val imageAlt: String
-)
 
 enum class BottomNavItem(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
@@ -543,37 +577,6 @@ enum class BottomNavItem(val label: String, val icon: ImageVector) {
     MESSAGES("Messages", Icons.AutoMirrored.Filled.Message),
     PROFILE("Profile", Icons.Default.Person)
 }
-
-// Sample Data
-fun getSamplePets(): List<Pet> = listOf(
-    Pet(
-        id = "1",
-        name = "Buddy",
-        breed = "Golden Retriever",
-        locationTime = "Last seen: Central Park • 2 hours ago",
-        status = PetStatus.LOST,
-        imageRes = R.drawable.hero_dog,
-        imageAlt = "Golden retriever puppy sitting in a grassy field"
-    ),
-    Pet(
-        id = "2",
-        name = "Whiskers",
-        breed = "Domestic Shorthair",
-        locationTime = "Found near: Sunset Blvd • 1 day ago",
-        status = PetStatus.FOUND,
-        imageRes = R.drawable.hero_dog,
-        imageAlt = "A curious gray tabby cat with green eyes"
-    ),
-    Pet(
-        id = "3",
-        name = "Pip",
-        breed = "Jack Russell Terrier",
-        locationTime = "Last seen: Ocean Beach • 5 hours ago",
-        status = PetStatus.LOST,
-        imageRes = R.drawable.hero_dog,
-        imageAlt = "A small brown and white dog running on a beach"
-    )
-)
 
 @Preview(showBackground = true)
 @Composable
