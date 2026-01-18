@@ -9,7 +9,9 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ReportFoundScreen() {
+
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text(text = "Report Found Pet Fragment")
     }
+
 }

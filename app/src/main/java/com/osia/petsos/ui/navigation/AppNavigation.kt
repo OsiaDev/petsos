@@ -40,14 +40,10 @@ fun AppNavigation(
 
         // Pantalla de login
         composable(route = Screen.Login.route) {
-            // TODO: Implementar LoginScreen
-            WelcomeScreen(
-                onGetStartedClick = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Welcome.route) { inclusive = true }
-                    }
-                },
-                onLoginClick = { }
+            com.osia.petsos.ui.login.LoginScreen(
+                onLoginSuccess = {
+                    navController.popBackStack()
+                }
             )
         }
 
@@ -82,6 +78,9 @@ fun AppNavigation(
                 onNavigateToReportFound = {
                     navController.navigate(Screen.ReportFound.route)
                 },
+                onNavigateToLogin = {
+                    navController.navigate(Screen.Login.route)
+                },
                 onContactOwner = { petId ->
                     // TODO: Implementar lógica para contactar al dueño
                 },
@@ -93,12 +92,12 @@ fun AppNavigation(
 
         // Pantalla para reportar mascota perdida
         composable(route = Screen.ReportLost.route) {
-            com.osia.petsos.ui.report.ReportLostScreen()
+            ReportLostScreen()
         }
 
         // Pantalla para reportar mascota encontrada
         composable(route = Screen.ReportFound.route) {
-            com.osia.petsos.ui.report.ReportFoundScreen()
+            ReportFoundScreen()
         }
 
         // Pantalla de detalle de mascota

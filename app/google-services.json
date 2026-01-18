@@ -12,7 +12,20 @@
           "package_name": "com.osia.petsos"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "608658580372-c8b6fl4kijmsk9o11bg543m5dvj9a6i0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.osia.petsos",
+            "certificate_hash": "64c251e95c26303fb569090d284ff0fe9a0a652e"
+          }
+        },
+        {
+          "client_id": "608658580372-o1n51bgs1t4noknuivsbgdf29dej0uaj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC8GsDF19TOj529m9V9LvCntSm1C-rIZ2I"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608658580372-o1n51bgs1t4noknuivsbgdf29dej0uaj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
