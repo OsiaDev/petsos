@@ -24,7 +24,7 @@ data class PetAdDTO(
 
     val userId: String = "",
 
-    val createdAt: Timestamp? = null,
-    val updatedAt: Timestamp? = null,
-    val expiresAt: Timestamp? = null
+    val createdAt: Any? = null,
+    val updatedAt: Any? = null,
+    val expiresAt: Any? = null
 )
