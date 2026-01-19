@@ -73,10 +73,22 @@ fun PetLocation.toDTO(): PetLocationDTO =
     PetLocationDTO(lat, lng, address)
 
 /* Helpers */
-private fun Timestamp.toLocalDateTime(): LocalDateTime {
-    return this.toDate().toInstant()
-        .atZone(ZoneId.systemDefault())
-        .toLocalDateTime()
+private fun Any.toLocalDateTime(): LocalDateTime? {
+    return when (this) {
+        is Timestamp -> this.toDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime()
+        is Map<*, *> -> {
+            try {
+                val seconds = (this["seconds"] as? Number)?.toLong() ?: 0L
+                val nanoseconds = (this["nanoseconds"] as? Number)?.toInt() ?: 0
+                Timestamp(seconds, nanoseconds).toDate().toInstant()
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+            } catch (e: Exception) {
+                null
+            }
+        }
+        else -> null
+    }
 }
 
 private fun LocalDateTime.toTimestamp(): Timestamp {
