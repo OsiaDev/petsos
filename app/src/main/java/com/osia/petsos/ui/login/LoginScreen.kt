@@ -199,7 +199,7 @@ fun LoginScreen(
                     Button(
                         onClick = {
                             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                .requestIdToken("Hola mundo")
+                                .requestIdToken(context.getString(R.string.default_web_client_id))
                                 .requestEmail()
                                 .build()
                             val googleSignInClient = GoogleSignIn.getClient(context, gso)

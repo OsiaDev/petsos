@@ -25,7 +25,9 @@ class LoginViewModel @Inject constructor(
             if (result.isSuccess) {
                 _loginState.value = LoginState.Success
             } else {
-                _loginState.value = LoginState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                val errorMsg = result.exceptionOrNull()?.message ?: "Unknown error"
+                android.util.Log.e("LoginViewModel", "Google Sign-In failed: $errorMsg", result.exceptionOrNull())
+                _loginState.value = LoginState.Error(errorMsg)
             }
         }
     }
