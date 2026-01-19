@@ -14,6 +14,9 @@ hilt-navigation-compose = "1.3.0"
 coil = "2.7.0"
 google-service = "4.4.4"
 firebase-bom = "34.8.0"
+credentials = "1.5.0"
+googleid = "1.1.1"
+services-auth = "20.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -46,7 +49,13 @@ firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore"}
 firebase-storage = { group = "com.google.firebase", name = "firebase-storage"}
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth"}
-play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "20.7.0" }
+play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "services-auth" }
+
+# Credential Manager (modern replacement for GoogleSignIn)
+androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
+androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
+googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

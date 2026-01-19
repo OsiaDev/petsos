@@ -1,9 +1,6 @@
 package com.osia.petsos.ui.login
 
-import android.app.Activity
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,10 +22,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,7 +34,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -46,14 +43,17 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.osia.petsos.R
 import com.osia.petsos.ui.theme.BackgroundLight
 import com.osia.petsos.ui.theme.PrimaryPurple
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -62,6 +62,7 @@ fun LoginScreen(
 ) {
     val loginState by viewModel.loginState.collectAsState()
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     // Observe state changes
     LaunchedEffect(loginState) {
@@ -71,22 +72,8 @@ fun LoginScreen(
         }
     }
 
-    // Google Sign In Launcher
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                account?.idToken?.let { idToken ->
-                    viewModel.onGoogleSignInResult(idToken)
-                }
-            } catch (e: ApiException) {
-                // Handle error
-            }
-        }
-    }
+    // Setup Credential Manager
+    val credentialManager = CredentialManager.create(context)
 
     Box(
         modifier = Modifier
@@ -148,14 +135,13 @@ fun LoginScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     // Glow effect
-                     Box(
+                    Box(
                         modifier = Modifier
                             .fillMaxSize()
                             .clip(androidx.compose.foundation.shape.CircleShape)
                             .background(PrimaryPurple.copy(alpha = 0.05f))
-                            // Blur would need RenderEffect, simplifying for now with alpha
                     )
-                    
+
                     AsyncImage(
                         model = "https://lh3.googleusercontent.com/aida-public/AB6AXuCkoFPagm5MZvT8rRJjhe_Irk41tm7WJHyO0GWVSMi0YGNM9mQSMdvyRV6WJZ4CL_ImJaKc7L8SvLbLa0ro7xzbv3nfWhsZmWetmw8DVTr3kXt6PMZ3jmL6vgjVcqBQZ2sIFjzlgQQ6_5QJ0KFRw4107Tv1MfJ4OBZD4nD5XUX9xfoas-wKzv5aww5JwlBLAcgIVVx7gzCfUCRUtHFjvvTQLTuEYmWxveHBAoAAQPxLRtTgmB9p_B5O9s6c_DUVx9PToomU5JVXFAw",
                         contentDescription = "Friendly pets",
@@ -192,18 +178,51 @@ fun LoginScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
-                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                     horizontalAlignment = Alignment.CenterHorizontally,
-                     modifier = Modifier.fillMaxWidth()
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
+                    // Google Sign In Button using Credential Manager
+
+                    val webClientId = stringResource(R.string.default_web_client_id)
+
                     Button(
                         onClick = {
-                            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                .requestIdToken(context.getString(R.string.default_web_client_id))
-                                .requestEmail()
-                                .build()
-                            val googleSignInClient = GoogleSignIn.getClient(context, gso)
-                            launcher.launch(googleSignInClient.signInIntent)
+                            scope.launch {
+                                try {
+                                    // Get web client ID from google-services.json
+
+                                    // Configure Google ID option
+                                    val googleIdOption = GetGoogleIdOption.Builder()
+                                        .setFilterByAuthorizedAccounts(false)
+                                        .setServerClientId(webClientId)
+                                        .build()
+
+                                    // Build credential request
+                                    val request = GetCredentialRequest.Builder()
+                                        .addCredentialOption(googleIdOption)
+                                        .build()
+
+                                    // Get credential
+                                    val result = credentialManager.getCredential(
+                                        request = request,
+                                        context = context
+                                    )
+
+                                    // Process credential
+                                    val credential = result.credential
+                                    if (credential is GoogleIdTokenCredential) {
+                                        val idToken = credential.idToken
+                                        viewModel.onGoogleSignInResult(idToken)
+                                    }
+                                } catch (e: GetCredentialException) {
+                                    Log.e("LoginScreen", "Credential error: ${e.message}", e)
+                                    viewModel.onError("Sign in failed: ${e.message}")
+                                } catch (e: Exception) {
+                                    Log.e("LoginScreen", "Unexpected error: ${e.message}", e)
+                                    viewModel.onError("Unexpected error: ${e.message}")
+                                }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -216,10 +235,10 @@ fun LoginScreen(
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = PrimaryPurple
-                        )
+                        ),
+                        enabled = loginState !is LoginState.Loading
                     ) {
                         // Google Icon (Simplified)
-                        // In production use a vector asset
                         Text(
                             text = "G",
                             fontWeight = FontWeight.Bold,
@@ -228,7 +247,7 @@ fun LoginScreen(
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
-                            text = "Continue with Google",
+                            text = if (loginState is LoginState.Loading) "Signing in..." else "Continue with Google",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -239,7 +258,12 @@ fun LoginScreen(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(modifier = Modifier.weight(1f).height(1.dp).background(Color.Black.copy(alpha = 0.05f)))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                                .background(Color.Black.copy(alpha = 0.05f))
+                        )
                         Text(
                             text = "SECURE AUTHENTICATION",
                             fontSize = 10.sp,
@@ -248,18 +272,33 @@ fun LoginScreen(
                             modifier = Modifier.padding(horizontal = 12.dp),
                             letterSpacing = 1.sp
                         )
-                        Box(modifier = Modifier.weight(1f).height(1.dp).background(Color.Black.copy(alpha = 0.05f)))
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(1.dp)
+                                .background(Color.Black.copy(alpha = 0.05f))
+                        )
                     }
                 }
 
                 // Footer Terms
                 val termsText = buildAnnotatedString {
                     append("By continuing, you agree to our ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline, color = PrimaryPurple.copy(alpha = 0.8f))) {
+                    withStyle(
+                        style = SpanStyle(
+                            textDecoration = TextDecoration.Underline,
+                            color = PrimaryPurple.copy(alpha = 0.8f)
+                        )
+                    ) {
                         append("Terms")
                     }
                     append(" and ")
-                    withStyle(style = SpanStyle(textDecoration = TextDecoration.Underline, color = PrimaryPurple.copy(alpha = 0.8f))) {
+                    withStyle(
+                        style = SpanStyle(
+                            textDecoration = TextDecoration.Underline,
+                            color = PrimaryPurple.copy(alpha = 0.8f)
+                        )
+                    ) {
                         append("Privacy Policy")
                     }
                     append(".")
@@ -273,7 +312,18 @@ fun LoginScreen(
                     lineHeight = 16.sp,
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
+
+                // Error message
+                if (loginState is LoginState.Error) {
+                    Text(
+                        text = (loginState as LoginState.Error).message,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }
+
 }

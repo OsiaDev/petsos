@@ -32,14 +32,12 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun onError(message: String) {
+        _loginState.value = LoginState.Error(message)
+    }
+
     fun resetState() {
         _loginState.value = LoginState.Idle
     }
-}
 
-sealed class LoginState {
-    data object Idle : LoginState()
-    data object Loading : LoginState()
-    data object Success : LoginState()
-    data class Error(val message: String) : LoginState()
 }

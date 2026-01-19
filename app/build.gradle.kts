@@ -70,12 +70,18 @@ dependencies {
     // Coil for Image Loading
     implementation(libs.coil.compose)
 
+    // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.auth)
     implementation(libs.play.services.auth)
+
+    // Credential Manager (modern Google Sign-In)
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services)
+    implementation(libs.googleid)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

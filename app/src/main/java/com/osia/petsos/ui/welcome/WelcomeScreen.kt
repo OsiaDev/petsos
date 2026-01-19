@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,11 +58,6 @@ fun WelcomeScreen(
 
     // Estado del LazyRow para rastrear el desplazamiento
     val listState = rememberLazyListState()
-    val configuration = LocalConfiguration.current
-    val screenWidth = configuration.screenWidthDp.dp
-
-    // Ancho de cada tarjeta (260dp) + espacio entre ellas (16dp) + padding inicial (16dp)
-    val cardWidth = 260.dp + 16.dp
 
     // Calcular el índice actual basado en el desplazamiento
     val currentIndex by remember {
