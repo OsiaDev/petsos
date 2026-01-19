@@ -69,7 +69,9 @@ fun HomeScreen(
             .background(BackgroundLight)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Top))
         ) {
             // Sticky Header con blur
             Surface(
@@ -134,7 +136,7 @@ fun HomeScreen(
             }
         }
 
-        // Bottom Navigation Bar - Fixed at bottom
+        // Bottom Navigation Bar - Fixed at bottom con WindowInsets
         BottomNavigationBar(
             selectedTab = BottomNavItem.HOME,
             onTabSelected = { tab ->
@@ -152,7 +154,9 @@ fun HomeScreen(
                     BottomNavItem.PROFILE -> onNavigateToProfile()
                 }
             },
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .windowInsetsPadding(WindowInsets.systemBars.only(WindowInsetsSides.Bottom))
         )
 
         if (showReportTypeSheet) {
@@ -316,7 +320,7 @@ fun PetList(
             start = 16.dp,
             end = 16.dp,
             top = 0.dp,
-            bottom = 96.dp // Space for bottom navigation
+            bottom = 16.dp // Reducido porque WindowInsets manejará el espacio del navigation bar
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
