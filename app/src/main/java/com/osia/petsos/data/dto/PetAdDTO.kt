@@ -1,6 +1,6 @@
 package com.osia.petsos.data.dto
 
-import java.time.LocalDateTime
+import com.google.firebase.Timestamp
 
 data class PetAdDTO(
     val id: String = "",
@@ -24,7 +24,7 @@ data class PetAdDTO(
 
     val userId: String = "",
 
-    val createdAt: LocalDateTime? = null,
-    val updatedAt: LocalDateTime? = null,
-    val expiresAt: LocalDateTime? = null
+    val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null,
+    val expiresAt: Timestamp? = null
 )

@@ -1,7 +1,11 @@
 package com.osia.petsos.data.mapper
 
+import com.google.firebase.Timestamp
 import com.osia.petsos.data.dto.*
 import com.osia.petsos.domain.model.*
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.Date
 
 /* DTO → DOMAIN */
 fun PetAdDTO.toDomain(): PetAd =
@@ -30,9 +34,9 @@ fun PetAdDTO.toDomain(): PetAd =
 
         userId = userId,
 
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-        expiresAt = expiresAt
+        createdAt = createdAt?.toLocalDateTime(),
+        updatedAt = updatedAt?.toLocalDateTime(),
+        expiresAt = expiresAt?.toLocalDateTime()
     )
 
 /* DOMAIN → DTO */
@@ -56,9 +60,9 @@ fun PetAd.toDTO(): PetAdDTO =
 
         userId = userId,
 
-        createdAt = createdAt,
-        updatedAt = updatedAt,
-        expiresAt = expiresAt
+        createdAt = createdAt?.toTimestamp(),
+        updatedAt = updatedAt?.toTimestamp(),
+        expiresAt = expiresAt?.toTimestamp()
     )
 
 /* Location */
@@ -67,3 +71,15 @@ fun PetLocationDTO.toDomain(): PetLocation =
 
 fun PetLocation.toDTO(): PetLocationDTO =
     PetLocationDTO(lat, lng, address)
+
+/* Helpers */
+private fun Timestamp.toLocalDateTime(): LocalDateTime {
+    return this.toDate().toInstant()
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
+}
+
+private fun LocalDateTime.toTimestamp(): Timestamp {
+    val date = Date.from(this.atZone(ZoneId.systemDefault()).toInstant())
+    return Timestamp(date)
+}

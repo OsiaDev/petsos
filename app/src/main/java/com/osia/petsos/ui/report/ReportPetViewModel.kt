@@ -176,7 +176,7 @@ class ReportPetViewModel @Inject constructor(
             val petAd = PetAd(
                 type = state.reportType,
                 category = state.petCategory,
-                name = state.name.trim(),
+                name = if (state.name.isBlank()) null else state.name.trim(),
                 breed = if (state.petCategory == PetCategory.OTHER) null else state.breed.trim(),
                 description = state.description.trim(),
                 hasReward = state.hasReward,
@@ -210,7 +210,7 @@ class ReportPetViewModel @Inject constructor(
             isValid = false
         }
 
-        if (state.name.isBlank()) {
+        if (state.reportType == AdvertisementType.LOST && state.name.isBlank()) {
             _uiState.update { it.copy(nameError = "Name is required") }
             isValid = false
         }

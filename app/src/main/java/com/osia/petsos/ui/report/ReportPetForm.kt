@@ -1,6 +1,10 @@
 package com.osia.petsos.ui.report
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Environment
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,16 +32,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.domain.model.PetCategory
 import com.osia.petsos.domain.model.PetLocation
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import com.google.android.gms.location.LocationServices
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +61,7 @@ fun ReportPetForm(
     onCategoryChange: (PetCategory) -> Unit,
     onImagesSelected: (List<Uri>) -> Unit,
     onImageRemoved: (Uri) -> Unit,
-    onLocationSelected: (PetLocation) -> Unit, // Placeholder for now
+    onLocationSelected: (PetLocation) -> Unit, 
     onRewardChanged: (Boolean) -> Unit,
     onRewardAmountChanged: (String) -> Unit,
     onContactNameChange: (String) -> Unit,
@@ -58,13 +70,60 @@ fun ReportPetForm(
     onBackClick: () -> Unit,
     onErrorDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     val scrollState = androidx.compose.foundation.rememberScrollState()
     
-    // Image Picker
+    // Camera & Gallery Logic
+    var showImageSourceDialog by remember { mutableStateOf(false) }
+    var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(5)
     ) { uris ->
         onImagesSelected(uris)
+    }
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempPhotoUri != null) {
+            onImagesSelected(listOf(tempPhotoUri!!))
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            tempPhotoUri = createTempPictureUri(context)
+            cameraLauncher.launch(tempPhotoUri!!)
+        }
+    }
+
+    // Location Logic
+    val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
+    var isFetchingLocation by remember { mutableStateOf(false) }
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions.getOrElse(Manifest.permission.ACCESS_FINE_LOCATION) { false } ||
+                      permissions.getOrElse(Manifest.permission.ACCESS_COARSE_LOCATION) { false }
+        if (granted) {
+            isFetchingLocation = true
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    isFetchingLocation = false
+                    if (location != null) {
+                        onLocationSelected(PetLocation(location.latitude, location.longitude, "Current Location"))
+                    }
+                }.addOnFailureListener {
+                    isFetchingLocation = false
+                }
+            } catch (e: SecurityException) {
+                isFetchingLocation = false // Should not happen if permission granted
+            }
+        }
     }
 
     if (uiState.error != null) {
@@ -73,6 +132,38 @@ fun ReportPetForm(
             confirmButton = { TextButton(onClick = onErrorDismiss) { Text("OK") } },
             title = { Text("Error") },
             text = { Text(uiState.error) }
+        )
+    }
+
+    if (showImageSourceDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageSourceDialog = false },
+            title = { Text("Select Image Source") },
+            text = { Text("Choose where to get the image from.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showImageSourceDialog = false
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }) {
+                    Text("Gallery")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showImageSourceDialog = false
+                    val permissionCheck = ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                    if (permissionCheck == PackageManager.PERMISSION_GRANTED) {
+                         tempPhotoUri = createTempPictureUri(context)
+                         cameraLauncher.launch(tempPhotoUri!!)
+                    } else {
+                        permissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                }) {
+                    Text("Camera")
+                }
+            }
         )
     }
 
@@ -113,7 +204,7 @@ fun ReportPetForm(
                 } else {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Publish Announcement") // Todo: Translate or adapt
+                    Text(text = "Publish Announcement") 
                 }
             }
         },
@@ -168,11 +259,9 @@ fun ReportPetForm(
                                 modifier = Modifier
                                     .size(80.dp)
                                     .clip(RoundedCornerShape(8.dp))
-                                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp)) // Dashed effect difficult without custom draw
+                                    .border(1.dp, Color.LightGray, RoundedCornerShape(8.dp))
                                     .clickable {
-                                        photoPickerLauncher.launch(
-                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                                        )
+                                        showImageSourceDialog = true
                                     },
                                 contentAlignment = Alignment.Center
                             ) {
@@ -230,10 +319,11 @@ fun ReportPetForm(
 
             // Name
             item {
+                val nameLabel = if (uiState.reportType == AdvertisementType.LOST) "Pet's Name*" else "Pet's Name"
                 OutlinedTextField(
                     value = uiState.name,
                     onValueChange = onNameChange,
-                    label = { Text("Pet's Name*") },
+                    label = { Text(nameLabel) },
                     placeholder = { Text("e.g. Buddy") },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
@@ -352,14 +442,18 @@ fun ReportPetForm(
             // Location
             item {
                 // Address Search UI (Visual only for now, would need Places API)
+                val locationText = if (uiState.location?.lat != 0.0) 
+                    "${uiState.location?.lat}, ${uiState.location?.lng}" 
+                    else ""
+
                 OutlinedTextField(
-                    value = "", // Todo: Bind to something if we have address text
+                    value = locationText, 
                     onValueChange = {},
                     label = { Text("Address or Area*") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    readOnly = true, // Start with readOnly until we implement map/places
+                    readOnly = true, 
                     isError = uiState.locationError != null,
                     supportingText = { uiState.locationError?.let { Text(it) } }
                 )
@@ -367,14 +461,27 @@ fun ReportPetForm(
                 
                 // Use My Location Button
                 OutlinedButton(
-                    onClick = { /* Todo: Request permission and get location */ },
+                    onClick = { 
+                         locationPermissionLauncher.launch(
+                             arrayOf(
+                                 Manifest.permission.ACCESS_FINE_LOCATION,
+                                 Manifest.permission.ACCESS_COARSE_LOCATION
+                             )
+                         )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF6B46C1))
                 ) {
-                    Icon(Icons.Default.MyLocation, contentDescription = null)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Use My Current Location")
+                    if (isFetchingLocation) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Fetching Location...")
+                    } else {
+                        Icon(Icons.Default.MyLocation, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Use My Current Location")
+                    }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -387,7 +494,6 @@ fun ReportPetForm(
                         .fillMaxWidth()
                         .aspectRatio(4f/3f)
                         .clip(RoundedCornerShape(12.dp))
-                        // .clickable { /* Open map picker */ }
                 )
                 Spacer(modifier = Modifier.height(16.dp))
             }
@@ -455,4 +561,20 @@ fun ReportPetForm(
             }
         }
     }
+}
+
+fun createTempPictureUri(context: Context): Uri {
+    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+    val imageFileName = "JPEG_" + timeStamp + "_"
+    
+    // Use cache directory or external files dir
+    val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES) ?: context.cacheDir
+    val image = File.createTempFile(
+        imageFileName,
+        ".jpg",
+        storageDir
+    )
+    
+    // Must match authorities in AndroidManifest.xml
+    return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", image)
 }
