@@ -10,4 +10,6 @@ interface PetRepository {
 
     fun getUserPets(userId: String): Flow<Resource<List<PetAd>>>
 
+    suspend fun savePet(pet: PetAd, images: List<android.net.Uri>): Resource<Boolean>
+
 }

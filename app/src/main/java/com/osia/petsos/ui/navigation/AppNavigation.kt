@@ -103,12 +103,20 @@ fun AppNavigation(
 
         // Pantalla para reportar mascota perdida
         composable(route = Screen.ReportLost.route) {
-            ReportLostScreen()
+            ReportLostScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // Pantalla para reportar mascota encontrada
         composable(route = Screen.ReportFound.route) {
-            ReportFoundScreen()
+            ReportFoundScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                }
+            )
         }
 
         // Pantalla de detalle de mascota
