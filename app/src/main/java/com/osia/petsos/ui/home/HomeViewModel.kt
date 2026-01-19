@@ -20,14 +20,17 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
+
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
     val currentUser = authRepository.currentUser
     
     private val _searchQuery = MutableStateFlow("")
+
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
     private val _selectedFilter = MutableStateFlow(PetFilter.ALL)
+
     val selectedFilter: StateFlow<PetFilter> = _selectedFilter.asStateFlow()
 
     init {

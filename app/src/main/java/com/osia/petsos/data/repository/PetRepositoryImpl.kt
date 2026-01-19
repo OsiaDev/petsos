@@ -1,6 +1,7 @@
 package com.osia.petsos.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.osia.petsos.core.config.FirebaseConfig
 import com.osia.petsos.data.dto.PetAdDTO
 import com.osia.petsos.data.mapper.toDomain
 import com.osia.petsos.domain.model.PetAd
@@ -18,7 +19,8 @@ class PetRepositoryImpl @Inject constructor(
     override fun getPets(): Flow<Resource<List<PetAd>>> = callbackFlow {
         trySend(Resource.Loading())
 
-        val subscription = firestore.collection("pets")
+        // Usar la constante de colección centralizada
+        val subscription = firestore.collection(FirebaseConfig.PETS_COLLECTION)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     trySend(Resource.Error(error.localizedMessage ?: "Unknown error"))

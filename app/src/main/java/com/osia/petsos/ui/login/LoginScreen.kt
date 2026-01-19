@@ -29,12 +29,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -50,7 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
-import com.osia.petsos.R
+import com.osia.petsos.core.config.FirebaseConfig
 import com.osia.petsos.ui.theme.BackgroundLight
 import com.osia.petsos.ui.theme.PrimaryPurple
 import kotlinx.coroutines.launch
@@ -100,8 +98,7 @@ fun LoginScreen(
                             spotColor = PrimaryPurple.copy(alpha = 0.5f),
                             shape = RoundedCornerShape(12.dp)
                         )
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(PrimaryPurple),
+                        .background(PrimaryPurple, RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
@@ -138,8 +135,10 @@ fun LoginScreen(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .clip(androidx.compose.foundation.shape.CircleShape)
-                            .background(PrimaryPurple.copy(alpha = 0.05f))
+                            .background(
+                                PrimaryPurple.copy(alpha = 0.05f),
+                                androidx.compose.foundation.shape.CircleShape
+                            )
                     )
 
                     AsyncImage(
@@ -183,14 +182,12 @@ fun LoginScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     // Google Sign In Button using Credential Manager
-
-                    val webClientId = stringResource(R.string.default_web_client_id)
-
                     Button(
                         onClick = {
                             scope.launch {
                                 try {
-                                    // Get web client ID from google-services.json
+                                    // Usar la configuración centralizada
+                                    val webClientId = FirebaseConfig.GOOGLE_WEB_CLIENT_ID
 
                                     // Configure Google ID option
                                     val googleIdOption = GetGoogleIdOption.Builder()

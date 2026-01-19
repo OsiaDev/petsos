@@ -16,6 +16,7 @@ class LoginViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
+
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()
 
     fun onGoogleSignInResult(idToken: String) {

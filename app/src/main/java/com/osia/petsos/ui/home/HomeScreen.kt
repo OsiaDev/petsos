@@ -2,7 +2,6 @@ package com.osia.petsos.ui.home
 
 
 import androidx.compose.ui.tooling.preview.Preview
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +29,7 @@ import coil.compose.AsyncImage
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.osia.petsos.R
+import com.osia.petsos.core.config.FirebaseConfig
 import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.domain.model.PetAd
 import com.osia.petsos.ui.theme.BackgroundLight
@@ -141,9 +141,9 @@ fun HomeScreen(
                 when (tab) {
                     BottomNavItem.HOME -> { /* Already here */ }
                     BottomNavItem.ALERTS -> onNavigateToAlerts()
-                    BottomNavItem.ADD -> { 
+                    BottomNavItem.ADD -> {
                         if (currentUser != null) {
-                            showReportTypeSheet = true 
+                            showReportTypeSheet = true
                         } else {
                             onNavigateToLogin()
                         }
@@ -361,11 +361,9 @@ fun PetCard(
                     .aspectRatio(16f / 9f)
                     .background(Color.LightGray)
             ) {
+                // Usar FirebaseConfig para obtener la URL de Storage
                 val imageUrl = pet.photoUrls.firstOrNull()?.let { path ->
-                    // Construct HTTP URL from path if needed, or use directly if it's already a URL.
-                    // Assuming path is like "pets/123/thumb/abc.webp"
-                    if (path.startsWith("http")) path
-                    else "https://firebasestorage.googleapis.com/v0/b/petsos-project-app.firebasestorage.app/o/${Uri.encode(path)}?alt=media"
+                    FirebaseConfig.getStorageUrl(path)
                 }
 
                 if (imageUrl != null) {
@@ -532,10 +530,10 @@ fun BottomNavigationBar(
 
         // Floating Action Button (centered)
         FloatingActionButton(
-            onClick = { 
-               // We reuse the onTabSelected logic which is passed down from HomeScreen
-               // effectively this calls the callback we defined above
-               onTabSelected(BottomNavItem.ADD) 
+            onClick = {
+                // We reuse the onTabSelected logic which is passed down from HomeScreen
+                // effectively this calls the callback we defined above
+                onTabSelected(BottomNavItem.ADD)
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
