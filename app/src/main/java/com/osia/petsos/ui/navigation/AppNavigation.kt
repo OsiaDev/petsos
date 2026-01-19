@@ -23,23 +23,27 @@ import com.osia.petsos.ui.profile.ProfileUiState
  */
 @Composable
 fun AppNavigation(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    startDestination: String = Screen.Welcome.route
 ) {
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = startDestination
     ) {
         // Pantalla de bienvenida
         composable(route = Screen.Welcome.route) {
+            val welcomeViewModel: com.osia.petsos.ui.welcome.WelcomeViewModel = hiltViewModel()
             WelcomeScreen(
                 onGetStartedClick = {
+                    welcomeViewModel.completeOnboarding()
                     navController.navigate(Screen.Home.route) {
                         // Evitar volver a la pantalla de bienvenida
                         popUpTo(Screen.Welcome.route) { inclusive = true }
                     }
                 },
                 onLoginClick = {
+                    welcomeViewModel.completeOnboarding()
                     navController.navigate(Screen.Login.route)
                 }
             )

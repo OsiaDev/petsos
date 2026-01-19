@@ -2,7 +2,10 @@ package com.osia.petsos.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.osia.petsos.domain.model.PetAd
 import com.osia.petsos.domain.repository.AuthRepository
+import com.osia.petsos.domain.repository.PetRepository
+import com.osia.petsos.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +18,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val petRepository: com.osia.petsos.domain.repository.PetRepository
+    private val petRepository: PetRepository
 ) : ViewModel() {
 
     // UI State exposed to the View
@@ -30,18 +33,18 @@ class ProfileViewModel @Inject constructor(
         )
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    val userPets: StateFlow<com.osia.petsos.utils.Resource<List<com.osia.petsos.domain.model.PetAd>>> = authRepository.currentUser
+    val userPets: StateFlow<Resource<List<PetAd>>> = authRepository.currentUser
         .flatMapLatest { user ->
             if (user != null) {
                 petRepository.getUserPets(user.uid)
             } else {
-                kotlinx.coroutines.flow.flowOf(com.osia.petsos.utils.Resource.Success(emptyList()))
+                kotlinx.coroutines.flow.flowOf(Resource.Success(emptyList()))
             }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = com.osia.petsos.utils.Resource.Loading()
+            initialValue = Resource.Loading()
         )
 
     fun signOut() {
@@ -49,10 +52,5 @@ class ProfileViewModel @Inject constructor(
             authRepository.signOut()
         }
     }
-}
 
-sealed interface ProfileUiState {
-    data object Loading : ProfileUiState
-    data class Authenticated(val user: com.google.firebase.auth.FirebaseUser) : ProfileUiState
-    data object Unauthenticated : ProfileUiState
 }

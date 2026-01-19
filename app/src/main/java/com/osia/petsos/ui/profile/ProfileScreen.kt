@@ -1,7 +1,6 @@
 package com.osia.petsos.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,10 +8,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,6 +26,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.osia.petsos.core.config.FirebaseConfig
+import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.ui.theme.*
 import com.osia.petsos.utils.Resource
 import com.osia.petsos.domain.model.PetAd
@@ -82,12 +82,12 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector = Icons.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = BackgroundLight, 
                     titleContentColor = TextPrimary,
                     navigationIconContentColor = TextPrimary
@@ -193,7 +193,7 @@ fun ProfileScreen(
             // Tab Content
             when (selectedTab) {
                 ProfileTab.REPORTED_PETS -> {
-                    if (userPetsResource is com.osia.petsos.utils.Resource.Loading) {
+                    if (userPetsResource is Resource.Loading) {
                         item {
                             Box(modifier = Modifier.fillMaxWidth().height(200.dp), contentAlignment = Alignment.Center) {
                                 CircularProgressIndicator(color = PrimaryPurple)
@@ -268,7 +268,7 @@ fun SettingsContent(onSignOut: () -> Unit) {
         HorizontalDivider()
         ListItem(
             headlineContent = { Text("Sign Out") },
-            leadingContent = { Icon(Icons.Default.ExitToApp, contentDescription = null, tint = ErrorLight) },
+            leadingContent = { Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = ErrorLight) },
             modifier = Modifier.clickable { onSignOut() }
         )
     }
@@ -310,7 +310,7 @@ fun PetCard(pet: PetAd) {
                         fontWeight = FontWeight.Bold,
                         letterSpacing = 1.sp
                     ),
-                    color = if (pet.type == com.osia.petsos.domain.model.AdvertisementType.LOST) SecondaryOrange else PrimaryPurple
+                    color = if (pet.type == AdvertisementType.LOST) SecondaryOrange else PrimaryPurple
                 )
                 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -334,7 +334,7 @@ fun PetCard(pet: PetAd) {
             Spacer(modifier = Modifier.width(16.dp))
             
             AsyncImage(
-                model = pet.photoUrls.firstOrNull()?.let { com.osia.petsos.core.config.FirebaseConfig.getStorageUrl(it) } 
+                model = pet.photoUrls.firstOrNull()?.let { FirebaseConfig.getStorageUrl(it) }
                         ?: "https://lh3.googleusercontent.com/placeholder",
                 contentDescription = "Pet Image",
                 contentScale = ContentScale.Crop,
