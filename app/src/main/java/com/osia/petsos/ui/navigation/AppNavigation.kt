@@ -9,6 +9,13 @@ import com.osia.petsos.ui.welcome.WelcomeScreen
 import com.osia.petsos.ui.home.HomeScreen
 import com.osia.petsos.ui.report.ReportFoundScreen
 import com.osia.petsos.ui.report.ReportLostScreen
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.osia.petsos.ui.profile.ProfileScreen
+import com.osia.petsos.ui.profile.ProfileViewModel
+import com.osia.petsos.ui.profile.ProfileUiState
 
 /**
  * Composable principal de navegación de la aplicación
@@ -108,7 +115,18 @@ fun AppNavigation(
 
         // Pantalla de perfil
         composable(route = Screen.Profile.route) {
-            // TODO: Implementar ProfileScreen
+            val viewModel: ProfileViewModel = hiltViewModel()
+            val uiState by viewModel.uiState.collectAsState()
+
+            LaunchedEffect(uiState) {
+                if (uiState is ProfileUiState.Unauthenticated) {
+                    navController.navigate(Screen.Login.route)
+                }
+            }
+
+            if (uiState !is ProfileUiState.Unauthenticated) {
+                ProfileScreen(navController = navController, viewModel = viewModel)
+            }
         }
 
         // Pantalla de configuración

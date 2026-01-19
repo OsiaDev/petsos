@@ -8,4 +8,6 @@ interface PetRepository {
 
     fun getPets(): Flow<Resource<List<PetAd>>>
 
+    fun getUserPets(userId: String): Flow<Resource<List<PetAd>>>
+
 }

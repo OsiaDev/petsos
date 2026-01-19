@@ -38,4 +38,26 @@ class PetRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
+    override fun getUserPets(userId: String): Flow<Resource<List<PetAd>>> = callbackFlow {
+        trySend(Resource.Loading())
+
+        val subscription = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+            .whereEqualTo("userId", userId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Resource.Error(error.localizedMessage ?: "Unknown error"))
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    val pets = snapshot.documents.mapNotNull { doc ->
+                        doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)?.toDomain()
+                    }
+                    trySend(Resource.Success(pets))
+                }
+            }
+
+        awaitClose { subscription.remove() }
+    }
+
 }
