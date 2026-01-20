@@ -12,7 +12,7 @@ object FirebaseConfig {
      * Web Client ID para Google Sign-In
      * Obtenido de google-services.json (client_type: 3)
      */
-    const val GOOGLE_WEB_CLIENT_ID = "608658580372-c8b6fl4kijmsk9o11bg543m5dvj9a6i0.apps.googleusercontent.com"
+    const val GOOGLE_WEB_CLIENT_ID = "608658580372-0csgirj6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com"
 
     /**
      * Bucket de Firebase Storage
