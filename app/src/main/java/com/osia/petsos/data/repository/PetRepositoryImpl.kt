@@ -22,18 +22,26 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.storage.FirebaseStorage
 import com.osia.petsos.domain.model.PetAdStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import androidx.core.graphics.scale
 
 class PetRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
     private val storage: FirebaseStorage,
+    private val auth: FirebaseAuth,
     @ApplicationContext private val context: Context
 ) : PetRepository {
+
+    companion object {
+        private const val TAG = "PetRepository"
+    }
 
     override fun getPets(): Flow<Resource<List<PetAd>>> = callbackFlow {
         trySend(Resource.Loading())
@@ -78,85 +86,156 @@ class PetRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
-    override suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean> = try {
-        val petRef = firestore.collection(FirebaseConfig.PETS_COLLECTION).document()
-        val petId = petRef.id
-
-        // Convertir a DTO
-        val petDTO = pet.copy(
-            id = petId,
-            status = PetAdStatus.PROCESSING,
-            photoUrls = emptyList(),
-            createdAt = LocalDateTime.now(),
-            updatedAt = LocalDateTime.now()
-        ).toDTO()
-
-        // Crear un mapa mutable para poder modificar los timestamps
-        val petData = mutableMapOf<String, Any?>(
-            "id" to petDTO.id,
-            "type" to petDTO.type,
-            "status" to petDTO.status,
-            "category" to petDTO.category,
-            "breed" to petDTO.breed,
-            "name" to petDTO.name,
-            "description" to petDTO.description,
-            "hasReward" to petDTO.hasReward,
-            "rewardAmount" to petDTO.rewardAmount,
-            "phones" to petDTO.phones,
-            "location" to petDTO.location,
-            "photoUrls" to petDTO.photoUrls,
-            "userId" to petDTO.userId,
-            // Usar FieldValue.serverTimestamp() para timestamps
-            "createdAt" to FieldValue.serverTimestamp(),
-            "updatedAt" to FieldValue.serverTimestamp(),
-            "expiresAt" to petDTO.expiresAt
-        )
-
-        // Guardar en Firestore
-        petRef.set(petData).await()
-
-        val metadata = storageMetadata {
-            contentType = "image/jpeg"
-        }
-
-        // Subir imágenes
-        images.forEach { uri ->
-            val imageId = UUID.randomUUID().toString()
-            val filename = "${imageId}_original.jpg"
-            val path = "pets/$petId/original/$filename"
-            val ref = storage.reference.child(path)
-
-            val jpegBytes = withContext(Dispatchers.IO) {
-                compressImageToJpeg(context, uri)
+    override suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean> {
+        return try {
+            // Verificar autenticación
+            val currentUser = auth.currentUser
+            if (currentUser == null) {
+                Log.e(TAG, "❌ User not authenticated")
+                return Resource.Error("Usuario no autenticado")
             }
 
-            if (jpegBytes != null) {
-                ref.putBytes(jpegBytes, metadata).await()
-            } else {
-                throw Exception("Failed to process image: $uri")
-            }
-        }
+            Log.d(TAG, "✅ Starting savePet for user: ${currentUser.uid}")
+            Log.d(TAG, "📸 Number of images to upload: ${images.size}")
 
-        Resource.Success(true)
-    } catch (e: Exception) {
-        e.printStackTrace()
-        Resource.Error(e.localizedMessage ?: "Failed to save pet report")
+            val petRef = firestore.collection(FirebaseConfig.PETS_COLLECTION).document()
+            val petId = petRef.id
+
+            Log.d(TAG, "📄 Created pet document with ID: $petId")
+
+            // Convertir a DTO
+            val petDTO = pet.copy(
+                id = petId,
+                userId = currentUser.uid, // Asegurar que sea el UID correcto
+                status = PetAdStatus.PROCESSING,
+                images = emptyList(),
+                createdAt = LocalDateTime.now(),
+                updatedAt = LocalDateTime.now()
+            ).toDTO()
+
+            // Crear un mapa mutable para poder modificar los timestamps
+            val petData = mutableMapOf<String, Any?>(
+                "id" to petDTO.id,
+                "type" to petDTO.type,
+                "status" to petDTO.status,
+                "category" to petDTO.category,
+                "breed" to petDTO.breed,
+                "name" to petDTO.name,
+                "description" to petDTO.description,
+                "hasReward" to petDTO.hasReward,
+                "rewardAmount" to petDTO.rewardAmount,
+                "phones" to petDTO.phones,
+                "location" to petDTO.location,
+                "images" to petDTO.images,
+                "userId" to petDTO.userId,
+                "createdAt" to FieldValue.serverTimestamp(),
+                "updatedAt" to FieldValue.serverTimestamp(),
+                "expiresAt" to petDTO.expiresAt
+            )
+
+            // Guardar en Firestore
+            petRef.set(petData).await()
+            Log.d(TAG, "✅ Pet saved to Firestore successfully")
+
+            val metadata = storageMetadata {
+                contentType = "image/jpeg"
+            }
+
+            // Subir imágenes
+            Log.d(TAG, "🔄 Starting image upload process...")
+            images.forEachIndexed { index, uri ->
+                try {
+                    val imageId = UUID.randomUUID().toString()
+                    val filename = "${imageId}_original.jpg"
+                    val path = "pets/$petId/original/$filename"
+
+                    Log.d(TAG, "📤 Uploading image ${index + 1}/${images.size}")
+                    Log.d(TAG, "   Path: $path")
+                    Log.d(TAG, "   URI: $uri")
+
+                    val ref = storage.reference.child(path)
+
+                    val jpegBytes = withContext(Dispatchers.IO) {
+                        compressImageToJpeg(context, uri)
+                    }
+
+                    if (jpegBytes != null) {
+                        val sizeInMB = jpegBytes.size / (1024.0 * 1024.0)
+                        Log.d(TAG, "   ✅ Image compressed: ${String.format("%.2f", sizeInMB)} MB")
+
+                        // Verificar el tamaño (10MB = 10,485,760 bytes)
+                        if (jpegBytes.size > 10 * 1024 * 1024) {
+                            throw Exception("Image too large: ${String.format("%.2f", sizeInMB)} MB")
+                        }
+
+                        Log.d(TAG, "   🚀 Uploading to Firebase Storage...")
+                        val uploadTask = ref.putBytes(jpegBytes, metadata)
+                        uploadTask.await()
+
+                        Log.d(TAG, "   ✅ Image ${index + 1} uploaded successfully!")
+                    } else {
+                        throw Exception("Failed to compress image: $uri")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "❌ Error uploading image ${index + 1}", e)
+                    Log.e(TAG, "   Error type: ${e.javaClass.simpleName}")
+                    Log.e(TAG, "   Error message: ${e.message}")
+                    throw e
+                }
+            }
+
+            Log.d(TAG, "🎉 All images uploaded successfully!")
+            Resource.Success(true)
+        } catch (e: Exception) {
+            Log.e(TAG, "❌ FATAL ERROR in savePet", e)
+            Log.e(TAG, "   Error type: ${e.javaClass.simpleName}")
+            Log.e(TAG, "   Error message: ${e.message}")
+            e.printStackTrace()
+            Resource.Error(e.localizedMessage ?: "Failed to save pet report")
+        }
     }
 
     private fun compressImageToJpeg(context: Context, uri: Uri): ByteArray? {
         return try {
             val inputStream = context.contentResolver.openInputStream(uri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
 
-            if (bitmap == null) return null
+            if (originalBitmap == null) {
+                Log.e(TAG, "Failed to decode bitmap from URI: $uri")
+                return null
+            }
+
+            // Redimensionar si es muy grande (max 1920px en cualquier dimensión)
+            val maxDimension = 1920
+            val bitmap = if (originalBitmap.width > maxDimension || originalBitmap.height > maxDimension) {
+                val ratio = minOf(
+                    maxDimension.toFloat() / originalBitmap.width,
+                    maxDimension.toFloat() / originalBitmap.height
+                )
+                val newWidth = (originalBitmap.width * ratio).toInt()
+                val newHeight = (originalBitmap.height * ratio).toInt()
+
+                Log.d(TAG, "Resizing image from ${originalBitmap.width}x${originalBitmap.height} to ${newWidth}x${newHeight}")
+
+                originalBitmap.scale(newWidth, newHeight).also {
+                    if (it != originalBitmap) originalBitmap.recycle()
+                }
+            } else {
+                originalBitmap
+            }
 
             val outputStream = ByteArrayOutputStream()
             bitmap.compress(Bitmap.CompressFormat.JPEG, 85, outputStream)
             val bytes = outputStream.toByteArray()
             outputStream.close()
+
+            if (bitmap != originalBitmap) bitmap.recycle()
+
+            Log.d(TAG, "Image compressed to ${bytes.size} bytes")
             bytes
         } catch (e: Exception) {
+            Log.e(TAG, "Error compressing image", e)
             e.printStackTrace()
             null
         }

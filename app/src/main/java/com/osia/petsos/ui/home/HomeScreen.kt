@@ -366,7 +366,7 @@ fun PetCard(
                     .background(Color.LightGray)
             ) {
                 // Usar FirebaseConfig para obtener la URL de Storage
-                val imageUrl = pet.photoUrls.firstOrNull()?.let { path ->
+                val imageUrl = pet.images.firstOrNull()?.let { path ->
                     FirebaseConfig.getStorageUrl(path)
                 }
 

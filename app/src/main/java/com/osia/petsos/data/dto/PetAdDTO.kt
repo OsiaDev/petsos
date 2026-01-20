@@ -20,11 +20,11 @@ data class PetAdDTO(
     val phones: List<String> = emptyList(),
 
     val location: PetLocationDTO = PetLocationDTO(),
-    val photoUrls: List<String> = emptyList(),
+    val images: List<String> = emptyList(),
 
     val userId: String = "",
 
-    val createdAt: Any? = null,
-    val updatedAt: Any? = null,
-    val expiresAt: Any? = null
+    val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null,
+    val expiresAt: Timestamp? = null
 )

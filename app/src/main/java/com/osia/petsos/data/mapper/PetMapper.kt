@@ -30,7 +30,7 @@ fun PetAdDTO.toDomain(): PetAd =
         phones = phones,
 
         location = location.toDomain(),
-        photoUrls = photoUrls,
+        images = images,
 
         userId = userId,
 
@@ -56,7 +56,7 @@ fun PetAd.toDTO(): PetAdDTO =
         phones = phones,
 
         location = location.toDTO(),
-        photoUrls = photoUrls,
+        images = images,
 
         userId = userId,
 

@@ -334,7 +334,7 @@ fun PetCard(pet: PetAd) {
             Spacer(modifier = Modifier.width(16.dp))
             
             AsyncImage(
-                model = pet.photoUrls.firstOrNull()?.let { FirebaseConfig.getStorageUrl(it) }
+                model = pet.images.firstOrNull()?.let { FirebaseConfig.getStorageUrl(it) }
                         ?: "https://lh3.googleusercontent.com/placeholder",
                 contentDescription = "Pet Image",
                 contentScale = ContentScale.Crop,
