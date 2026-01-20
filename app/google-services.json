@@ -7,12 +7,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:608658580372:android:bcf868ea460d7c8480e581",
+        "mobilesdk_app_id": "1:608658580372:android:192236cf535c34bc80e581",
         "android_client_info": {
           "package_name": "com.osia.petsos"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "608658580372-6855l2ldr918f225d188gsbsev94avck.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.osia.petsos",
+            "certificate_hash": "64c251e95c26303fb569090d284ff0fe9a0a652e"
+          }
+        },
         {
           "client_id": "608658580372-0csgirj6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com",
           "client_type": 3

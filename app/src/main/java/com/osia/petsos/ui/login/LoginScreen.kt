@@ -186,8 +186,9 @@ fun LoginScreen(
                         onClick = {
                             scope.launch {
                                 try {
-                                    // Usar la configuración centralizada
+                                    // Log para debugging
                                     val webClientId = FirebaseConfig.GOOGLE_WEB_CLIENT_ID
+                                    Log.d("LoginScreen", "Starting Google Sign-In with Web Client ID: $webClientId")
 
                                     // Configure Google ID option
                                     val googleIdOption = GetGoogleIdOption.Builder()
@@ -200,17 +201,35 @@ fun LoginScreen(
                                         .addCredentialOption(googleIdOption)
                                         .build()
 
+                                    Log.d("LoginScreen", "Credential request built successfully")
+
                                     // Get credential
                                     val result = credentialManager.getCredential(
                                         request = request,
                                         context = context
                                     )
 
+                                    Log.d("LoginScreen", "Credential result received: ${result.credential.type}")
+
                                     // Process credential
                                     val credential = result.credential
+
+                                    // Check if it's a GoogleIdTokenCredential
                                     if (credential is GoogleIdTokenCredential) {
                                         val idToken = credential.idToken
+                                        Log.d("LoginScreen", "GoogleIdTokenCredential received, idToken: ${idToken.take(20)}...")
                                         viewModel.onGoogleSignInResult(idToken)
+                                    } else {
+                                        // Try to extract GoogleIdTokenCredential from CustomCredential
+                                        try {
+                                            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                            val idToken = googleIdTokenCredential.idToken
+                                            Log.d("LoginScreen", "GoogleIdTokenCredential extracted from CustomCredential, idToken: ${idToken.take(20)}...")
+                                            viewModel.onGoogleSignInResult(idToken)
+                                        } catch (e: Exception) {
+                                            Log.e("LoginScreen", "Failed to extract GoogleIdTokenCredential", e)
+                                            viewModel.onError("Unexpected credential type: ${credential.type}")
+                                        }
                                     }
                                 } catch (e: GetCredentialException) {
                                     Log.e("LoginScreen", "Credential error: ${e.message}", e)

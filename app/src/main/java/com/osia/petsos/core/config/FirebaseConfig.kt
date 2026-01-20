@@ -10,7 +10,16 @@ object FirebaseConfig {
 
     /**
      * Web Client ID para Google Sign-In
-     * Obtenido de google-services.json (client_type: 3)
+     *
+     * CRÍTICO: Este debe ser el Web Client ID (client_type: 3), NO el Android Client ID
+     *
+     * En google-services.json, busca el oauth_client con "client_type": 3
+     *
+     * Web Client ID (CORRECTO):
+     * 608658580372-0csgjr6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com
+     *
+     * Android Client ID (INCORRECTO - NO usar):
+     * 608658580372-6855l2ldr918f225d188gsbsev94avck.apps.googleusercontent.com
      */
     const val GOOGLE_WEB_CLIENT_ID = "608658580372-0csgirj6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com"
 
