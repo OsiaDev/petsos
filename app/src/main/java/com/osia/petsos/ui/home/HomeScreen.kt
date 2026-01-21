@@ -11,7 +11,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -59,7 +64,29 @@ fun HomeScreen(
     val uiState by homeViewModel.uiState.collectAsState()
     val searchQuery by homeViewModel.searchQuery.collectAsState()
     val selectedFilter by homeViewModel.selectedFilter.collectAsState()
+
     val currentUser by homeViewModel.currentUser.collectAsState(initial = null)
+    val isRefreshing by homeViewModel.isRefreshing.collectAsState()
+
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val fineLocationGranted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] ?: false
+        val coarseLocationGranted = permissions[Manifest.permission.ACCESS_COARSE_LOCATION] ?: false
+        
+        if (fineLocationGranted || coarseLocationGranted) {
+           homeViewModel.refresh()
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        locationPermissionLauncher.launch(
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        )
+    }
 
     var showReportTypeSheet by remember { mutableStateOf(false) }
 
@@ -124,14 +151,20 @@ fun HomeScreen(
                                         pet.breed?.contains(searchQuery, ignoreCase = true) == true)
                     }
 
-                    PetList(
-                        pets = filteredPets,
-                        onContactOwner = onContactOwner,
-                        onViewDetails = onViewDetails,
+                    PullToRefreshBox(
+                        isRefreshing = isRefreshing,
+                        onRefresh = { homeViewModel.refresh() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                    )
+                    ) {
+                        PetList(
+                            pets = filteredPets,
+                            onContactOwner = onContactOwner,
+                            onViewDetails = onViewDetails,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             }
         }
