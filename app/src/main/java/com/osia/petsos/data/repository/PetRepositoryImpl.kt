@@ -29,6 +29,9 @@ import com.osia.petsos.domain.model.PetAdStatus
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
 
@@ -54,10 +57,43 @@ class PetRepositoryImpl @Inject constructor(
                 }
 
                 if (snapshot != null) {
-                    val pets = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)?.toDomain()
+                    launch(Dispatchers.IO) {
+                        try {
+                            val pets = snapshot.documents.mapNotNull { doc ->
+                                doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
+                            }
+
+                            val petsWithImages = pets.map { petDto ->
+                                async {
+                                    try {
+                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+                                            .document(petDto.id)
+                                            .collection("images")
+                                            .limit(1)
+                                            .get()
+                                            .await()
+
+                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
+                                        if (!thumbPath.isNullOrBlank()) {
+                                            petDto.copy(images = listOf(thumbPath))
+                                        } else {
+                                            petDto
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
+                                        petDto
+                                    }
+                                }
+                            }.awaitAll()
+
+                            withContext(Dispatchers.Main) {
+                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing pets data", e)
+                            trySend(Resource.Error(e.localizedMessage ?: "Error processing data"))
+                        }
                     }
-                    trySend(Resource.Success(pets))
                 }
             }
 
@@ -76,10 +112,43 @@ class PetRepositoryImpl @Inject constructor(
                 }
 
                 if (snapshot != null) {
-                    val pets = snapshot.documents.mapNotNull { doc ->
-                        doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)?.toDomain()
+                    launch(Dispatchers.IO) {
+                        try {
+                            val pets = snapshot.documents.mapNotNull { doc ->
+                                doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
+                            }
+
+                            val petsWithImages = pets.map { petDto ->
+                                async {
+                                    try {
+                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+                                            .document(petDto.id)
+                                            .collection("images")
+                                            .limit(1)
+                                            .get()
+                                            .await()
+
+                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
+                                        if (!thumbPath.isNullOrBlank()) {
+                                            petDto.copy(images = listOf(thumbPath))
+                                        } else {
+                                            petDto
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
+                                        petDto
+                                    }
+                                }
+                            }.awaitAll()
+
+                            withContext(Dispatchers.Main) {
+                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing user pets data", e)
+                            trySend(Resource.Error(e.localizedMessage ?: "Error processing data"))
+                        }
                     }
-                    trySend(Resource.Success(pets))
                 }
             }
 
