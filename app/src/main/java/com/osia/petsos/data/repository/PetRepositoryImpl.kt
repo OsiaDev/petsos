@@ -318,7 +318,7 @@ class PetRepositoryImpl @Inject constructor(
             ).toDTO()
 
             // Crear un mapa mutable para poder modificar los timestamps
-            val petData = mutableMapOf<String, Any?>(
+            val petData = mutableMapOf(
                 "id" to petDTO.id,
                 "geohash" to petDTO.geohash,
                 "type" to petDTO.type,
