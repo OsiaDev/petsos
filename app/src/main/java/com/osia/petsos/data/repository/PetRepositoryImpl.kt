@@ -34,6 +34,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
+import com.osia.petsos.utils.GeoUtils
 
 class PetRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore,
@@ -62,7 +63,10 @@ class PetRepositoryImpl @Inject constructor(
                             val pets = snapshot.documents.mapNotNull { doc ->
                                 doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
                             }
-
+                            // ... (rest of logic same as before)
+                            // Refactoring to share logic would be good but I'll update it later
+                            
+                            // Re-using existing logic for now to keep it compiling while I update interface
                             val petsWithImages = pets.map { petDto ->
                                 async {
                                     try {
@@ -211,6 +215,77 @@ class PetRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
+    override fun getNearbyPets(lat: Double, lng: Double, radiusKm: Double): Flow<Resource<List<PetAd>>> = callbackFlow {
+        trySend(Resource.Loading())
+
+        val centerHash = com.osia.petsos.utils.GeoUtils.encode(lat, lng, 10)
+        // Adjust precision based on radius roughly
+        val precision = when {
+            radiusKm <= 5.0 -> 5
+            radiusKm <= 20.0 -> 4
+            else -> 3
+        }
+        val searchHash = centerHash.substring(0, precision)
+        
+        // Firestore StartAt/EndAt for Prefix
+        val endHash = "$searchHash~"
+
+        val subscription = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+            .orderBy("geohash")
+            .startAt(searchHash)
+            .endAt(endHash)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Resource.Error(error.localizedMessage ?: "Unknown error"))
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    launch(Dispatchers.IO) {
+                        try {
+                            val pets = snapshot.documents.mapNotNull { doc ->
+                                doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
+                            }
+                            
+                            val petsWithImages = pets.map { petDto ->
+                                async {
+                                    try {
+                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+                                            .document(petDto.id)
+                                            .collection("images")
+                                            .limit(1)
+                                            .get()
+                                            .await()
+
+                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
+                                        if (!thumbPath.isNullOrBlank()) {
+                                            petDto.copy(images = listOf(thumbPath))
+                                        } else {
+                                            petDto
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
+                                        petDto
+                                    }
+                                }
+                            }.awaitAll()
+
+                            withContext(Dispatchers.Main) {
+                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing pets data", e)
+                            trySend(Resource.Error(e.localizedMessage ?: "Error processing data"))
+                        }
+                    }
+                }
+            }
+
+        awaitClose { subscription.remove() }
+    }
+
+
+
     override suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean> {
         return try {
             // Verificar autenticación
@@ -233,6 +308,10 @@ class PetRepositoryImpl @Inject constructor(
                 id = petId,
                 userId = currentUser.uid, // Asegurar que sea el UID correcto
                 status = PetAdStatus.PROCESSING,
+                geohash = GeoUtils.encode(
+                    pet.location.lat,
+                    pet.location.lng
+                ),
                 images = emptyList(),
                 createdAt = LocalDateTime.now(),
                 updatedAt = LocalDateTime.now()
@@ -241,6 +320,7 @@ class PetRepositoryImpl @Inject constructor(
             // Crear un mapa mutable para poder modificar los timestamps
             val petData = mutableMapOf<String, Any?>(
                 "id" to petDTO.id,
+                "geohash" to petDTO.geohash,
                 "type" to petDTO.type,
                 "status" to petDTO.status,
                 "category" to petDTO.category,

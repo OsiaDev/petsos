@@ -4,6 +4,8 @@ import com.google.firebase.Timestamp
 
 data class PetAdDTO(
     val id: String = "",
+    val geohash: String? = null,
+
 
     val type: String = "",       // LOST | FOUND
     val status: String = "",     // ACTIVE | RESOLVED | EXPIRED | WITHDRAWN

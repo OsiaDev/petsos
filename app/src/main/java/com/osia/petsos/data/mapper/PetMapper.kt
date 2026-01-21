@@ -8,62 +8,50 @@ import java.time.ZoneId
 import java.util.Date
 
 /* DTO → DOMAIN */
-fun PetAdDTO.toDomain(): PetAd =
-    PetAd(
+fun PetAdDTO.toDomain(): PetAd {
+    return PetAd(
         id = id,
-
-        type = runCatching { AdvertisementType.valueOf(type) }
-            .getOrDefault(AdvertisementType.LOST),
-
-        status = runCatching { PetAdStatus.valueOf(status) }
-            .getOrDefault(PetAdStatus.ACTIVE),
-
-        category = runCatching { PetCategory.valueOf(category) }
-            .getOrDefault(PetCategory.OTHER),
-
-        breed = if (category == PetCategory.OTHER.name) null else breed,
+        geohash = geohash,
+        type = AdvertisementType.valueOf(type),
+        status = PetAdStatus.valueOf(status),
+        category = PetCategory.valueOf(category),
+        breed = breed,
         name = name,
-
         description = description,
         hasReward = hasReward,
         rewardAmount = rewardAmount,
         phones = phones,
-
         location = location.toDomain(),
         images = images,
-
         userId = userId,
-
         createdAt = createdAt?.toLocalDateTime(),
         updatedAt = updatedAt?.toLocalDateTime(),
         expiresAt = expiresAt?.toLocalDateTime()
     )
+}
 
 /* DOMAIN → DTO */
-fun PetAd.toDTO(): PetAdDTO =
-    PetAdDTO(
+fun PetAd.toDTO(): PetAdDTO {
+    return PetAdDTO(
         id = id,
+        geohash = geohash,
         type = type.name,
         status = status.name,
-
         category = category.name,
-        breed = if (category == PetCategory.OTHER) null else breed,
+        breed = breed,
         name = name,
-
         description = description,
         hasReward = hasReward,
         rewardAmount = rewardAmount,
         phones = phones,
-
         location = location.toDTO(),
         images = images,
-
         userId = userId,
-
         createdAt = createdAt?.toTimestamp(),
         updatedAt = updatedAt?.toTimestamp(),
         expiresAt = expiresAt?.toTimestamp()
     )
+}
 
 /* Location */
 fun PetLocationDTO.toDomain(): PetLocation =

@@ -13,6 +13,9 @@ interface PetRepository {
 
     fun getPet(petId: String): Flow<Resource<PetAd>>
 
+    fun getNearbyPets(lat: Double, lng: Double, radiusKm: Double): Flow<Resource<List<PetAd>>>
+
+
     suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean>
 
 }

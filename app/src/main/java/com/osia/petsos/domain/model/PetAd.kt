@@ -4,6 +4,8 @@ import java.time.LocalDateTime
 
 data class PetAd(
     val id: String = "",
+    val geohash: String? = null,
+
 
     // Qué pasó con la mascota
     val type: AdvertisementType = AdvertisementType.LOST,
