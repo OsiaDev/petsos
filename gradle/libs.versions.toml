@@ -15,10 +15,12 @@ coil = "2.7.0"
 google-service = "4.4.4"
 firebase-bom = "34.8.0"
 credentials = "1.5.0"
-googleid = "1.1.1"
+googleid = "1.2.0"
 services-auth = "21.5.0"
 services-location = "21.3.0"
 preferences = "1.2.0"
+map-compose = "7.0.0"
+map-service = "20.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -58,6 +60,10 @@ play-services-location = { group = "com.google.android.gms", name = "play-servic
 androidx-credentials = { group = "androidx.credentials", name = "credentials", version.ref = "credentials" }
 androidx-credentials-play-services = { group = "androidx.credentials", name = "credentials-play-services-auth", version.ref = "credentials" }
 googleid = { group = "com.google.android.libraries.identity.googleid", name = "googleid", version.ref = "googleid" }
+
+# Maps
+maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "map-compose" }
+play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "map-service" }
 
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "preferences" }
 

@@ -43,6 +43,16 @@ import com.osia.petsos.ui.theme.TextSecondary
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.ui.zIndex
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+import android.content.Intent
+import android.net.Uri
+import com.google.maps.android.compose.MapUiSettings
+import androidx.compose.foundation.clickable
 
 @Composable
 fun PetDetailScreen(
@@ -328,26 +338,100 @@ fun PetDetailContent(
                     )
                 }
 
-                // Last Seen At (Map Placeholder)
+                // Last Seen At (Map)
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = "Last Seen At",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Last Seen At",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        
+                        TextButton(onClick = {
+                            val gmmIntentUri = Uri.parse("geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${pet.name})")
+                            val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                            mapIntent.setPackage("com.google.android.apps.maps")
+                            // Check if Maps is installed, otherwise let system handle it
+                            // Since we are in Composable scope and getting context is easy
+                            // We will use LocalContext.current inside the onClick
+                        }) {
+                           // Text moved inside the Clickable area logic below
+                        }
+                    }
+
+                    val context = LocalContext.current
+                    
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp),
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(12.dp)),
                         color = SurfaceLight
                     ) {
-                       // Placeholder for Map
-                       Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text("Map View Placeholder", color = TextSecondary)
-                            // In real implementation: GoogleMap(...)
-                       }
+                        if (pet.location.lat != 0.0 && pet.location.lng != 0.0) {
+                            val petLocation = LatLng(pet.location.lat, pet.location.lng)
+                            val cameraPositionState = rememberCameraPositionState {
+                                position = CameraPosition.fromLatLngZoom(petLocation, 15f)
+                            }
+                            
+                            Box {
+                                GoogleMap(
+                                    modifier = Modifier.fillMaxSize(),
+                                    cameraPositionState = cameraPositionState,
+                                    uiSettings = MapUiSettings(
+                                        zoomControlsEnabled = false,
+                                        scrollGesturesEnabled = true,
+                                        zoomGesturesEnabled = true,
+                                        rotationGesturesEnabled = false,
+                                        tiltGesturesEnabled = false
+                                    )
+                                ) {
+                                    Marker(
+                                        state = MarkerState(position = petLocation),
+                                        title = pet.name,
+                                        snippet = pet.location.address
+                                    )
+                                }
+                                
+                                // Overlay button to open in maps
+                                Button(
+                                    onClick = {
+                                        val gmmIntentUri = Uri.parse("geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${Uri.encode(pet.name)})")
+                                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                                        mapIntent.setPackage("com.google.android.apps.maps")
+                                        
+                                        try {
+                                            context.startActivity(mapIntent)
+                                        } catch (e: Exception) {
+                                            // Fallback to browser
+                                            val browserIntent = Intent(Intent.ACTION_VIEW, 
+                                                Uri.parse("https://www.google.com/maps/search/?api=1&query=${pet.location.lat},${pet.location.lng}"))
+                                            context.startActivity(browserIntent)
+                                        }
+                                    },
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                ) {
+                                    Text("Open in Maps", style = MaterialTheme.typography.labelMedium)
+                                }
+                            }
+                        } else {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text("Location coordinates not available", color = TextSecondary)
+                            }
+                        }
                     }
                 }
             }

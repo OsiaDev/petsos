@@ -53,7 +53,9 @@ fun AppNavigation(
         composable(route = Screen.Login.route) {
             com.osia.petsos.ui.login.LoginScreen(
                 onLoginSuccess = {
-                    navController.popBackStack()
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
                 }
             )
         }

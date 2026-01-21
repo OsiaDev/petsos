@@ -30,6 +30,10 @@
         android:theme="@style/Theme.PetSOS"
         tools:targetApi="31">
 
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyBOP-f5Vgla1hQDuJELynUmx4-ryeinmyM" />
+
         <!-- FileProvider para compartir archivos -->
         <provider
             android:name="androidx.core.content.FileProvider"
