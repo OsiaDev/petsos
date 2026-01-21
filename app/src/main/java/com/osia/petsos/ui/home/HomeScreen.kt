@@ -385,6 +385,7 @@ fun PetCard(
                 spotColor = Color.Black.copy(alpha = 0.05f)
             ),
         shape = RoundedCornerShape(12.dp),
+        onClick = onViewDetails, // Make the whole card clickable
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
@@ -482,7 +483,7 @@ fun PetCard(
 
                 // Action Button
                 Button(
-                    onClick = if (pet.type == AdvertisementType.LOST) onContactOwner else onViewDetails,
+                    onClick = onViewDetails,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(40.dp),
@@ -495,7 +496,7 @@ fun PetCard(
                     )
                 ) {
                     Text(
-                        text = if (pet.type == AdvertisementType.LOST) "Contact Owner" else "View Details",
+                        text = "View Details",
                         style = MaterialTheme.typography.labelMedium.copy(
                             fontWeight = FontWeight.Bold
                         )

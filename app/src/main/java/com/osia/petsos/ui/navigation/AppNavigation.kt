@@ -122,7 +122,15 @@ fun AppNavigation(
         // Pantalla de detalle de mascota
         composable(route = Screen.PetDetail.route) { backStackEntry ->
             val petId = backStackEntry.arguments?.getString("petId")
-            // TODO: Implementar PetDetailScreen con petId
+            if (petId != null) {
+                com.osia.petsos.ui.details.PetDetailScreen(
+                    petId = petId,
+                    onNavigateBack = { navController.popBackStack() },
+                    onContactOwner = { ownerId ->
+                        // TODO: Implement Contact Logic
+                    }
+                )
+            }
         }
 
         // Pantalla de perfil
@@ -146,5 +154,4 @@ fun AppNavigation(
             // TODO: Implementar SettingsScreen
         }
     }
-
 }

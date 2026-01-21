@@ -155,6 +155,62 @@ class PetRepositoryImpl @Inject constructor(
         awaitClose { subscription.remove() }
     }
 
+    override fun getPet(petId: String): Flow<Resource<PetAd>> = callbackFlow {
+        trySend(Resource.Loading())
+
+        val subscription = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+            .document(petId)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    trySend(Resource.Error(error.localizedMessage ?: "Unknown error"))
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null && snapshot.exists()) {
+                    launch(Dispatchers.IO) {
+                        try {
+                            val petDto = snapshot.toObject(PetAdDTO::class.java)?.copy(id = snapshot.id)
+
+                            if (petDto != null) {
+                                try {
+                                    val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
+                                        .document(petDto.id)
+                                        .collection("images")
+                                        .get()
+                                        .await()
+
+                                    val images = imagesSnapshot.documents.mapNotNull {
+                                        it.getString("path") ?: it.getString("thumbPath")
+                                    }
+
+                                    // If no images found in subcollection, check if there are images in the root document (legacy/alternative)
+                                    val finalImages = if (images.isNotEmpty()) images else petDto.images
+
+                                    withContext(Dispatchers.Main) {
+                                        trySend(Resource.Success(petDto.copy(images = finalImages).toDomain()))
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Error fetching images for pet ${petDto.id}", e)
+                                    withContext(Dispatchers.Main) {
+                                        trySend(Resource.Success(petDto.toDomain()))
+                                    }
+                                }
+                            } else {
+                                trySend(Resource.Error("Pet data is invalid"))
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error processing pet detail data", e)
+                            trySend(Resource.Error(e.localizedMessage ?: "Error processing data"))
+                        }
+                    }
+                } else {
+                    trySend(Resource.Error("Pet not found"))
+                }
+            }
+
+        awaitClose { subscription.remove() }
+    }
+
     override suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean> {
         return try {
             // Verificar autenticación
