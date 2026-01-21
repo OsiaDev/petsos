@@ -27,12 +27,14 @@ class MainViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.isFirstLaunch.collect { isFirst ->
-                _startDestination.value = if (isFirst) {
-                    Screen.Welcome.route
-                } else {
-                    Screen.Home.route // Or Login, but Home handles redirection
+                if (_startDestination.value == null) {
+                   _startDestination.value = if (isFirst) {
+                        Screen.Welcome.route
+                    } else {
+                        Screen.Home.route 
+                    }
+                    _isLoading.value = false
                 }
-                _isLoading.value = false
             }
         }
     }
