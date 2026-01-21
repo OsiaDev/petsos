@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
+import android.content.res.Configuration
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -37,6 +38,7 @@ import com.osia.petsos.R
 import com.osia.petsos.core.config.FirebaseConfig
 import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.domain.model.PetAd
+import com.osia.petsos.ui.report.ReportTypeBottomSheet
 import com.osia.petsos.ui.theme.BackgroundLight
 import com.osia.petsos.ui.theme.PetSOSTheme
 import com.osia.petsos.ui.theme.PrimaryPurple
@@ -193,7 +195,7 @@ fun HomeScreen(
         )
 
         if (showReportTypeSheet) {
-            com.osia.petsos.ui.report.ReportTypeBottomSheet(
+            ReportTypeBottomSheet(
                 onDismissRequest = { showReportTypeSheet = false },
                 onReportLostClick = {
                     showReportTypeSheet = false
@@ -649,7 +651,7 @@ fun HomeScreenPreview() {
     }
 }
 
-@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES)
+@Preview(showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun HomeScreenDarkPreview() {
     PetSOSTheme(darkTheme = true) {

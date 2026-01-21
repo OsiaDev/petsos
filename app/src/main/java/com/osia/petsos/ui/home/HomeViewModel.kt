@@ -1,11 +1,14 @@
 package com.osia.petsos.ui.home
 
+import android.location.Location
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.osia.petsos.core.location.LocationService
 import com.osia.petsos.domain.repository.AuthRepository
 import com.osia.petsos.domain.repository.PetRepository
 import com.osia.petsos.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,7 +20,7 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val repository: PetRepository,
     authRepository: AuthRepository,
-    private val locationService: com.osia.petsos.core.location.LocationService
+    private val locationService: LocationService
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
@@ -35,6 +38,7 @@ class HomeViewModel @Inject constructor(
     val selectedFilter: StateFlow<PetFilter> = _selectedFilter.asStateFlow()
 
     private val _isRefreshing = MutableStateFlow(false)
+
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     init {
@@ -49,7 +53,7 @@ class HomeViewModel @Inject constructor(
         _selectedFilter.value = filter
     }
 
-    private var fetchJob: kotlinx.coroutines.Job? = null
+    private var fetchJob: Job? = null
 
     fun refresh() {
         // Don't show full screen loading when refreshing via swipe
@@ -110,7 +114,7 @@ class HomeViewModel @Inject constructor(
 
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Float {
         val results = FloatArray(1)
-        android.location.Location.distanceBetween(lat1, lon1, lat2, lon2, results)
+        Location.distanceBetween(lat1, lon1, lat2, lon2, results)
         return results[0]
     }
 

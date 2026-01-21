@@ -1,5 +1,6 @@
 package com.osia.petsos.domain.repository
 
+import android.net.Uri
 import com.osia.petsos.domain.model.PetAd
 import kotlinx.coroutines.flow.Flow
 import com.osia.petsos.utils.Resource
@@ -10,6 +11,6 @@ interface PetRepository {
 
     fun getUserPets(userId: String): Flow<Resource<List<PetAd>>>
 
-    suspend fun savePet(pet: PetAd, images: List<android.net.Uri>): Resource<Boolean>
+    suspend fun savePet(pet: PetAd, images: List<Uri>): Resource<Boolean>
 
 }
