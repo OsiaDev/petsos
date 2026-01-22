@@ -27,6 +27,7 @@ data class PetAd(
 
     val location: PetLocation = PetLocation(),
     val images: List<String> = emptyList(),
+    val imagesFull: List<String> = emptyList(),
     val imageHeader: String? = null,
 
     val userId: String = "",

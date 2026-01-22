@@ -136,14 +136,19 @@ class PetRepositoryImpl @Inject constructor(
                                         .await()
 
                                     val images = imagesSnapshot.documents.mapNotNull {
-                                        it.getString("path") ?: it.getString("thumbPath")
+                                        it.getString("thumbPath") ?: it.getString("path")
+                                    }
+                                    val imagesFull = imagesSnapshot.documents.mapNotNull {
+                                        it.getString("fullPath")
                                     }
 
                                     // If no images found in subcollection, check if there are images in the root document (legacy/alternative)
                                     val finalImages = images.ifEmpty { petDto.images }
+                                    // If we found full images in subcollection use them, otherwise check root doc (though root doc usually lacks them)
+                                    val finalImagesFull = imagesFull.ifEmpty { petDto.imagesFull }
 
                                     withContext(Dispatchers.Main) {
-                                        trySend(Resource.Success(petDto.copy(images = finalImages).toDomain()))
+                                        trySend(Resource.Success(petDto.copy(images = finalImages, imagesFull = finalImagesFull).toDomain()))
                                     }
                                 } catch (e: Exception) {
                                     Log.e(TAG, "Error fetching images for pet ${petDto.id}", e)

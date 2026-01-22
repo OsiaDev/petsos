@@ -51,6 +51,11 @@ import com.google.maps.android.compose.rememberUpdatedMarkerState
 import android.content.Intent
 import android.net.Uri
 import com.google.maps.android.compose.MapUiSettings
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.net.toUri
 
 @Composable
@@ -122,6 +127,10 @@ fun PetDetailContent(
                 val images = pet.images.ifEmpty { listOf("") }
                 val pagerState = rememberPagerState(pageCount = { images.size })
 
+                // Gallery State
+                var showGallery by remember { mutableStateOf(false) }
+                var initialGalleryIndex by remember { mutableIntStateOf(0) }
+                
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier.fillMaxSize()
@@ -138,7 +147,12 @@ fun PetDetailContent(
                                 .diskCachePolicy(CachePolicy.ENABLED)
                                 .build(),
                             contentDescription = "Pet Image",
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable {
+                                    initialGalleryIndex = page
+                                    showGallery = true
+                                },
                             contentScale = ContentScale.Crop
                         )
                     } else {
@@ -150,6 +164,19 @@ fun PetDetailContent(
                         ) {
                             Text("No Image Available")
                         }
+                    }
+                }
+                
+                if (showGallery) {
+                    val fullImages = pet.imagesFull.ifEmpty { pet.images }
+                    if (fullImages.isNotEmpty()) {
+                        FullScreenImageGallery(
+                            images = fullImages,
+                            initialIndex = initialGalleryIndex,
+                            onDismiss = { showGallery = false }
+                        )
+                    } else {
+                         showGallery = false 
                     }
                 }
 
