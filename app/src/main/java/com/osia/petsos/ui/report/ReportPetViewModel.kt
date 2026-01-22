@@ -152,6 +152,16 @@ class ReportPetViewModel @Inject constructor(
         _uiState.update { it.copy(location = location, locationError = null) }
     }
 
+    fun onLocationAddressChange(newAddress: String) {
+        _uiState.update { 
+            val currentLocation = it.location ?: PetLocation()
+            it.copy(
+                location = currentLocation.copy(address = newAddress),
+                locationError = null
+            ) 
+        }
+    }
+
     fun onRewardChanged(hasReward: Boolean) {
         _uiState.update { it.copy(hasReward = hasReward) }
     }

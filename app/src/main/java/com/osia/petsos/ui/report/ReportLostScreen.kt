@@ -33,6 +33,7 @@ fun ReportLostScreen(
         onImagesSelected = viewModel::onImagesSelected,
         onImageRemoved = viewModel::onImageRemoved,
         onLocationSelected = viewModel::onLocationSelected,
+        onLocationAddressChange = viewModel::onLocationAddressChange,
         onRewardChanged = viewModel::onRewardChanged,
         onRewardAmountChanged = viewModel::onRewardAmountChanged,
         onContactNameChange = viewModel::onContactNameChange,

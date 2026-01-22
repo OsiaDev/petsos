@@ -62,6 +62,7 @@ fun ReportPetForm(
     onImagesSelected: (List<Uri>) -> Unit,
     onImageRemoved: (Uri) -> Unit,
     onLocationSelected: (PetLocation) -> Unit, 
+    onLocationAddressChange: (String) -> Unit,
     onRewardChanged: (Boolean) -> Unit,
     onRewardAmountChanged: (String) -> Unit,
     onContactNameChange: (String) -> Unit,
@@ -447,13 +448,14 @@ fun ReportPetForm(
                     else ""
 
                 OutlinedTextField(
-                    value = locationText, 
-                    onValueChange = {},
-                    label = { Text("Address or Area*") },
+                    value = uiState.location?.address ?: "", 
+                    onValueChange = onLocationAddressChange,
+                    label = { Text("Address or Reference*") },
+                    placeholder = { Text("e.g. Near Central Park") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    readOnly = true, 
+                    readOnly = false, 
                     isError = uiState.locationError != null,
                     supportingText = { uiState.locationError?.let { Text(it) } }
                 )
