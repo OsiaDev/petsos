@@ -1,9 +1,11 @@
 package com.osia.petsos.ui.details
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.rememberTransformableState
-import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -26,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -119,29 +122,9 @@ fun ZoomableImage(imageUrl: String) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
-    val state = rememberTransformableState { zoomChange, offsetChange, _ ->
-        scale = (scale * zoomChange).coerceIn(1f, 3f)
-        
-        val newOffset = offset + offsetChange
-        
-        // Only allow pan (offset) if zoomed in
-        if (scale > 1f) {
-             val maxX = (scale - 1) * 1000 // Approximate bound
-             val maxY = (scale - 1) * 1000
-             
-             offset = Offset(
-                 newOffset.x.coerceIn(-maxX, maxX),
-                 newOffset.y.coerceIn(-maxY, maxY)
-             )
-        } else {
-            offset = Offset.Zero
-        }
-    }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .transformable(state = state)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onDoubleTap = {
@@ -149,6 +132,43 @@ fun ZoomableImage(imageUrl: String) {
                         offset = Offset.Zero
                     }
                 )
+            }
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown(requireUnconsumed = false)
+                    do {
+                        val event = awaitPointerEvent()
+                        val zoomChange = event.calculateZoom()
+                        val panChange = event.calculatePan()
+                        
+                        // If scale is 1, only listen to multitouch (zoom)
+                        // If scale > 1, listen to everything (pan + zoom)
+                        val isZooming = event.changes.size > 1
+                        val shouldHandle = scale > 1f || isZooming
+                        
+                        if (shouldHandle) {
+                             if (zoomChange != 1f || panChange != Offset.Zero) {
+                                 scale = (scale * zoomChange).coerceIn(1f, 3f)
+                                 
+                                 // Adjust offset
+                                 val newOffset = offset + panChange
+                                 val maxX = (scale - 1) * 1000 // Approximate bound
+                                 val maxY = (scale - 1) * 1000
+                                 
+                                 offset = Offset(
+                                     newOffset.x.coerceIn(-maxX, maxX),
+                                     newOffset.y.coerceIn(-maxY, maxY)
+                                 )
+                                 
+                                 event.changes.forEach { 
+                                     if (it.positionChanged()) {
+                                         it.consume() 
+                                     }
+                                 }
+                             }
+                        }
+                    } while (event.changes.any { it.pressed })
+                }
             }
     ) {
          AsyncImage(
