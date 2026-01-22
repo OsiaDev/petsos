@@ -23,6 +23,7 @@ data class PetAdDTO(
 
     val location: PetLocationDTO = PetLocationDTO(),
     val images: List<String> = emptyList(),
+    val imageHeader: String? = null,
 
     val userId: String = "",
 

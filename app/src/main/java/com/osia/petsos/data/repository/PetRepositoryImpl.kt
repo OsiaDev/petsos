@@ -66,32 +66,9 @@ class PetRepositoryImpl @Inject constructor(
                             // ... (rest of logic same as before)
                             // Refactoring to share logic would be good but I'll update it later
                             
-                            // Re-using existing logic for now to keep it compiling while I update interface
-                            val petsWithImages = pets.map { petDto ->
-                                async {
-                                    try {
-                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
-                                            .document(petDto.id)
-                                            .collection("images")
-                                            .limit(1)
-                                            .get()
-                                            .await()
-
-                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
-                                        if (!thumbPath.isNullOrBlank()) {
-                                            petDto.copy(images = listOf(thumbPath))
-                                        } else {
-                                            petDto
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
-                                        petDto
-                                    }
-                                }
-                            }.awaitAll()
-
+                            // Optimized to use imageHeader from document
                             withContext(Dispatchers.Main) {
-                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                                trySend(Resource.Success(pets.map { it.toDomain() }))
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error processing pets data", e)
@@ -122,31 +99,8 @@ class PetRepositoryImpl @Inject constructor(
                                 doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
                             }
 
-                            val petsWithImages = pets.map { petDto ->
-                                async {
-                                    try {
-                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
-                                            .document(petDto.id)
-                                            .collection("images")
-                                            .limit(1)
-                                            .get()
-                                            .await()
-
-                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
-                                        if (!thumbPath.isNullOrBlank()) {
-                                            petDto.copy(images = listOf(thumbPath))
-                                        } else {
-                                            petDto
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
-                                        petDto
-                                    }
-                                }
-                            }.awaitAll()
-
                             withContext(Dispatchers.Main) {
-                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                                trySend(Resource.Success(pets.map { it.toDomain() }))
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error processing user pets data", e)
@@ -247,31 +201,8 @@ class PetRepositoryImpl @Inject constructor(
                                 doc.toObject(PetAdDTO::class.java)?.copy(id = doc.id)
                             }
                             
-                            val petsWithImages = pets.map { petDto ->
-                                async {
-                                    try {
-                                        val imagesSnapshot = firestore.collection(FirebaseConfig.PETS_COLLECTION)
-                                            .document(petDto.id)
-                                            .collection("images")
-                                            .limit(1)
-                                            .get()
-                                            .await()
-
-                                        val thumbPath = imagesSnapshot.documents.firstOrNull()?.getString("thumbPath")
-                                        if (!thumbPath.isNullOrBlank()) {
-                                            petDto.copy(images = listOf(thumbPath))
-                                        } else {
-                                            petDto
-                                        }
-                                    } catch (e: Exception) {
-                                        Log.e(TAG, "Error fetching image for pet ${petDto.id}", e)
-                                        petDto
-                                    }
-                                }
-                            }.awaitAll()
-
                             withContext(Dispatchers.Main) {
-                                trySend(Resource.Success(petsWithImages.map { it.toDomain() }))
+                                trySend(Resource.Success(pets.map { it.toDomain() }))
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error processing pets data", e)

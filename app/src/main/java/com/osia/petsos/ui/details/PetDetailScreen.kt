@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.PinDrop
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
@@ -25,7 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
@@ -42,17 +42,16 @@ import com.osia.petsos.ui.theme.TextPrimary
 import com.osia.petsos.ui.theme.TextSecondary
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.ui.zIndex
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.maps.android.compose.rememberUpdatedMarkerState
 import android.content.Intent
 import android.net.Uri
 import com.google.maps.android.compose.MapUiSettings
-import androidx.compose.foundation.clickable
+import androidx.core.net.toUri
 
 @Composable
 fun PetDetailScreen(
@@ -120,7 +119,7 @@ fun PetDetailContent(
                     .fillMaxWidth()
                     .height(320.dp)
             ) {
-                val images = if (pet.images.isNotEmpty()) pet.images else listOf("")
+                val images = pet.images.ifEmpty { listOf("") }
                 val pagerState = rememberPagerState(pageCount = { images.size })
 
                 HorizontalPager(
@@ -189,9 +188,9 @@ fun PetDetailContent(
                             tint = Color.White
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.weight(1f))
-                    
+
                     Text(
                         text = pet.name ?: "Pet Details",
                         color = Color.White,
@@ -294,14 +293,14 @@ fun PetDetailContent(
                             // Age is not in PetAd? Assuming it might be added later or we use Description
                             // Actually HTML showed Age. PetAd has no Age field shown in view_file.
                             // I will skip Age or put "N/A" if not available.
-                            // DetailItem(label = "Age", value = "3 years", modifier = Modifier.weight(1f)) 
-                            
+                            // DetailItem(label = "Age", value = "3 years", modifier = Modifier.weight(1f))
+
                             // Gender also not in PetAd visible fields?
                             // Let's check the fields again.
                             // PetAd fields: category, breed, name, description, hasReward, etc. NO AGE, NO GENDER.
                             // I will omit them for now.
                         }
-                        
+
                          // Posted By
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(
@@ -309,8 +308,8 @@ fun PetDetailContent(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
-                            // We don't have user name in PetAd, only userId. 
-                            // In a real app we would fetch user profile. 
+                            // We don't have user name in PetAd, only userId.
+                            // In a real app we would fetch user profile.
                             // For now, static text or "User"
                             Text(
                                 text = "User (ID: ${pet.userId.take(5)}...)", // Placeholder
@@ -351,9 +350,10 @@ fun PetDetailContent(
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
-                        
+
                         TextButton(onClick = {
-                            val gmmIntentUri = Uri.parse("geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${pet.name})")
+                            val gmmIntentUri =
+                                "geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${pet.name})".toUri()
                             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                             mapIntent.setPackage("com.google.android.apps.maps")
                             // Check if Maps is installed, otherwise let system handle it
@@ -365,7 +365,7 @@ fun PetDetailContent(
                     }
 
                     val context = LocalContext.current
-                    
+
                     Surface(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
@@ -379,7 +379,7 @@ fun PetDetailContent(
                             val cameraPositionState = rememberCameraPositionState {
                                 position = CameraPosition.fromLatLngZoom(petLocation, 15f)
                             }
-                            
+
                             Box {
                                 GoogleMap(
                                     modifier = Modifier.fillMaxSize(),
@@ -393,38 +393,45 @@ fun PetDetailContent(
                                     )
                                 ) {
                                     Marker(
-                                        state = MarkerState(position = petLocation),
+                                        state = rememberUpdatedMarkerState(position = petLocation),
                                         title = pet.name,
                                         snippet = pet.location.address
                                     )
                                 }
                                 
                                 // Overlay button to open in maps
-                                Button(
+                                IconButton(
                                     onClick = {
-                                        val gmmIntentUri = Uri.parse("geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${Uri.encode(pet.name)})")
+                                        val gmmIntentUri =
+                                            "geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${
+                                                Uri.encode(pet.name)
+                                            })".toUri()
                                         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                                         mapIntent.setPackage("com.google.android.apps.maps")
                                         
                                         try {
                                             context.startActivity(mapIntent)
-                                        } catch (e: Exception) {
+                                        } catch (_: Exception) {
                                             // Fallback to browser
-                                            val browserIntent = Intent(Intent.ACTION_VIEW, 
-                                                Uri.parse("https://www.google.com/maps/search/?api=1&query=${pet.location.lat},${pet.location.lng}"))
+                                            val browserIntent = Intent(Intent.ACTION_VIEW,
+                                                "https://www.google.com/maps/search/?api=1&query=${pet.location.lat},${pet.location.lng}".toUri())
                                             context.startActivity(browserIntent)
                                         }
                                     },
                                     modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .padding(8.dp),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                                        contentColor = MaterialTheme.colorScheme.primary
-                                    ),
-                                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                                        .align(Alignment.TopEnd)
+                                        .padding(8.dp)
+                                        .size(40.dp)
+                                        .background(
+                                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                            shape = CircleShape
+                                        )
                                 ) {
-                                    Text("Open in Maps", style = MaterialTheme.typography.labelMedium)
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                                        contentDescription = "Open in Maps",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
                                 }
                             }
                         } else {
