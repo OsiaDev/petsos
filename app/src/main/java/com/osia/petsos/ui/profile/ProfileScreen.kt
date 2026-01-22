@@ -333,8 +333,11 @@ fun PetCard(pet: PetAd) {
             
             Spacer(modifier = Modifier.width(16.dp))
             
+            // Optimized to use imageHeader (thumbnail) if available
+            val imagePath = pet.imageHeader ?: pet.images.firstOrNull()
+            
             AsyncImage(
-                model = pet.images.firstOrNull()?.let { FirebaseConfig.getStorageUrl(it) }
+                model = imagePath?.let { FirebaseConfig.getStorageUrl(it) }
                         ?: "https://lh3.googleusercontent.com/placeholder",
                 contentDescription = "Pet Image",
                 contentScale = ContentScale.Crop,
