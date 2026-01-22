@@ -45,6 +45,8 @@ import coil.compose.AsyncImage
 import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.domain.model.PetCategory
 import com.osia.petsos.domain.model.PetLocation
+import com.google.android.gms.maps.model.LatLng
+import androidx.compose.material.icons.filled.Place
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -76,6 +78,7 @@ fun ReportPetForm(
     
     // Camera & Gallery Logic
     var showImageSourceDialog by remember { mutableStateOf(false) }
+    var showLocationPicker by remember { mutableStateOf(false) }
     var tempPhotoUri by remember { mutableStateOf<Uri?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -165,6 +168,18 @@ fun ReportPetForm(
                     Text("Camera")
                 }
             }
+        )
+    }
+
+    if (showLocationPicker) {
+        LocationSelectionMap(
+            initialLocation = if (uiState.location != null && (uiState.location.lat != 0.0 || uiState.location.lng != 0.0)) {
+                LatLng(uiState.location.lat, uiState.location.lng)
+            } else null,
+            onLocationSelected = { latLng ->
+                onLocationSelected(PetLocation(latLng.latitude, latLng.longitude, uiState.location?.address ?: ""))
+            },
+            onDismiss = { showLocationPicker = false }
         )
     }
 
@@ -488,15 +503,47 @@ fun ReportPetForm(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 // Static Map Image (Placeholder as per design)
-                AsyncImage(
-                    model = "https://lh3.googleusercontent.com/aida-public/AB6AXuDjwiCDrW-ipeCCgtd9787cllN_OMqzBoTstPPUJq2xKCTq-aQWE5Mf-14AkjVgG13P5qV46PHDxDKBfm8OwJ7igblRopjqFo8317G3MA8Oox021KkQthdFkfc16LXSI-euFmcWX7V64kwD9z_rMb9pSuhmEo_tjAap-nKyOGiSKtS16uXTEB2abjPx9PDkBMM9xmuyWfTXy-YhsOP1Y6zeVIi8x8KlMfXeUy9PGJStMBuIVDRVsqFbDZOWNsPfNqI78E9ytVjyeHw",
-                    contentDescription = "Map Location",
-                    contentScale = ContentScale.Crop,
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(4f/3f)
                         .clip(RoundedCornerShape(12.dp))
-                )
+                        .clickable { showLocationPicker = true }
+                ) {
+                    // Placeholder Map Image
+
+
+                    // Since we can't easily access BuildConfig.MAPS_API_KEY without verifying it exists, 
+                    // and hardcoding it is bad practice (though already in manifest),
+                    // I will stick to the placeholder for now but add an overlay text saying "Tap to select on map"
+                    // Or actually, I can just use the placeholder for now to be safe and consistent.
+                    
+                    AsyncImage(
+                        model = "https://lh3.googleusercontent.com/aida-public/AB6AXuDjwiCDrW-ipeCCgtd9787cllN_OMqzBoTstPPUJq2xKCTq-aQWE5Mf-14AkjVgG13P5qV46PHDxDKBfm8OwJ7igblRopjqFo8317G3MA8Oox021KkQthdFkfc16LXSI-euFmcWX7V64kwD9z_rMb9pSuhmEo_tjAap-nKyOGiSKtS16uXTEB2abjPx9PDkBMM9xmuyWfTXy-YhsOP1Y6zeVIi8x8KlMfXeUy9PGJStMBuIVDRVsqFbDZOWNsPfNqI78E9ytVjyeHw",
+                        contentDescription = "Map Location",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(4f/3f)
+                    )
+                    
+                    // Overlay
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black.copy(alpha = 0.3f))
+                            .aspectRatio(4f/3f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.Place, contentDescription = null, tint = Color.White)
+                            Text(
+                                text = "Tap to set location on map", 
+                                color = Color.White, 
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
