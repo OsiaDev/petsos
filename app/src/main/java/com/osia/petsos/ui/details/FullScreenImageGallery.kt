@@ -1,14 +1,12 @@
 package com.osia.petsos.ui.details
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,7 +15,6 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,9 +49,20 @@ fun FullScreenImageGallery(
             dismissOnBackPress = true
         )
     ) {
+        // Infinite scroll logic
+        val pageCount = if (images.size > 1) Int.MAX_VALUE else images.size
+        // Start in the middle so user can scroll left immediately
+        val initialPage = if (images.size > 1) {
+            val middle = Int.MAX_VALUE / 2
+            // Adjust middle to align with index 0, then add initialIndex
+            middle - (middle % images.size) + initialIndex
+        } else {
+            initialIndex
+        }
+
         val pagerState = rememberPagerState(
-            initialPage = initialIndex,
-            pageCount = { images.size }
+            initialPage = initialPage,
+            pageCount = { pageCount }
         )
 
         Box(
@@ -66,7 +74,8 @@ fun FullScreenImageGallery(
                 state = pagerState,
                 modifier = Modifier.fillMaxSize()
             ) { page ->
-                val imageUrl = images[page]
+                val actualIndex = page % images.size
+                val imageUrl = images[actualIndex]
                 ZoomableImage(imageUrl = imageUrl)
             }
 
@@ -85,7 +94,7 @@ fun FullScreenImageGallery(
                 )
             }
             
-            // Page Indicator (Optional but helpful)
+            // Page Indicator
              if (images.size > 1) {
                 Box(
                     modifier = Modifier
@@ -94,8 +103,9 @@ fun FullScreenImageGallery(
                         .background(Color.Black.copy(alpha = 0.5f), CircleShape)
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
+                    val currentActualPage = (pagerState.currentPage % images.size) + 1
                      androidx.compose.material3.Text(
-                        text = "${pagerState.currentPage + 1} / ${images.size}",
+                        text = "$currentActualPage / ${images.size}",
                         color = Color.White
                     )
                 }
@@ -112,12 +122,13 @@ fun ZoomableImage(imageUrl: String) {
     val state = rememberTransformableState { zoomChange, offsetChange, _ ->
         scale = (scale * zoomChange).coerceIn(1f, 3f)
         
+        val newOffset = offset + offsetChange
+        
         // Only allow pan (offset) if zoomed in
         if (scale > 1f) {
-             val maxX = (scale - 1) * 1000 // Approximate bound, ideally calculated from container size
+             val maxX = (scale - 1) * 1000 // Approximate bound
              val maxY = (scale - 1) * 1000
              
-             val newOffset = offset + offsetChange
              offset = Offset(
                  newOffset.x.coerceIn(-maxX, maxX),
                  newOffset.y.coerceIn(-maxY, maxY)
@@ -127,24 +138,17 @@ fun ZoomableImage(imageUrl: String) {
         }
     }
 
-    // Reset zoom when image changes or is swiped away? 
-    // HorizontalPager handles disposal so this state is per page instance.
-    
     Box(
         modifier = Modifier
             .fillMaxSize()
             .transformable(state = state)
-            // Handle double tap to zoom reset/max
-             .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                     scale = (scale * zoom).coerceIn(1f, 3f)
-                     if (scale > 1f) {
-                         val newOffset = offset + pan
-                         offset = newOffset
-                     } else {
-                         offset = Offset.Zero
-                     }
-                }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onDoubleTap = {
+                        scale = if (scale > 1f) 1f else 2f
+                        offset = Offset.Zero
+                    }
+                )
             }
     ) {
          AsyncImage(
