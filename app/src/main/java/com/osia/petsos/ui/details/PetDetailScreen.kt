@@ -335,15 +335,19 @@ fun PetDetailContent(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextSecondary
                             )
-                            // We don't have user name in PetAd, only userId.
-                            // In a real app we would fetch user profile.
-                            // For now, static text or "User"
                             Text(
-                                text = "User (ID: ${pet.userId.take(5)}...)", // Placeholder
+                                text = pet.userName.ifBlank { "User" },
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.SemiBold,
                                 color = TextPrimary
                             )
+                            if (pet.userEmail.isNotBlank()) {
+                                Text(
+                                    text = pet.userEmail,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSecondary
+                                )
+                            }
                         }
                     }
                 }

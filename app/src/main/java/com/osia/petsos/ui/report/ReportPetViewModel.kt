@@ -184,7 +184,9 @@ class ReportPetViewModel @Inject constructor(
                 location = state.location ?: PetLocation(),
                 userId = currentUser.uid,
                 status = com.osia.petsos.domain.model.PetAdStatus.ACTIVE,
-                phones = if (state.contactPhone.isNotBlank()) listOf(state.contactPhone.trim()) else emptyList()
+                phones = if (state.contactPhone.isNotBlank()) listOf(state.contactPhone.trim()) else emptyList(),
+                userName = state.contactName,
+                userEmail = currentUser.email ?: ""
             )
 
             when (val result = petRepository.savePet(petAd, state.images)) {

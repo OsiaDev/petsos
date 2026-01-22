@@ -31,6 +31,8 @@ data class PetAd(
     val imageHeader: String? = null,
 
     val userId: String = "",
+    val userName: String = "",
+    val userEmail: String = "",
 
     val createdAt: LocalDateTime? = null,
     val updatedAt: LocalDateTime? = null,

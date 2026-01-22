@@ -267,6 +267,8 @@ class PetRepositoryImpl @Inject constructor(
                 "location" to petDTO.location,
                 "images" to petDTO.images,
                 "userId" to petDTO.userId,
+                "userName" to petDTO.userName,
+                "userEmail" to petDTO.userEmail,
                 "createdAt" to FieldValue.serverTimestamp(),
                 "updatedAt" to FieldValue.serverTimestamp(),
                 "expiresAt" to petDTO.expiresAt

@@ -26,6 +26,8 @@ fun PetAdDTO.toDomain(): PetAd {
         imagesFull = imagesFull,
         imageHeader = imageHeader,
         userId = userId,
+        userName = userName,
+        userEmail = userEmail,
         createdAt = createdAt?.toLocalDateTime(),
         updatedAt = updatedAt?.toLocalDateTime(),
         expiresAt = expiresAt?.toLocalDateTime()
@@ -51,6 +53,8 @@ fun PetAd.toDTO(): PetAdDTO {
         imagesFull = imagesFull,
         imageHeader = imageHeader,
         userId = userId,
+        userName = userName,
+        userEmail = userEmail,
         createdAt = createdAt?.toTimestamp(),
         updatedAt = updatedAt?.toTimestamp(),
         expiresAt = expiresAt?.toTimestamp()

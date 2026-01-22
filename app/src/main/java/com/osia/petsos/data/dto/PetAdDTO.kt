@@ -27,6 +27,8 @@ data class PetAdDTO(
     val imageHeader: String? = null,
 
     val userId: String = "",
+    val userName: String = "",
+    val userEmail: String = "",
 
     val createdAt: Timestamp? = null,
     val updatedAt: Timestamp? = null,
