@@ -30,8 +30,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import java.io.ByteArrayOutputStream
 import androidx.core.graphics.scale
 import com.osia.petsos.utils.GeoUtils
@@ -142,7 +140,7 @@ class PetRepositoryImpl @Inject constructor(
                                     }
 
                                     // If no images found in subcollection, check if there are images in the root document (legacy/alternative)
-                                    val finalImages = if (images.isNotEmpty()) images else petDto.images
+                                    val finalImages = images.ifEmpty { petDto.images }
 
                                     withContext(Dispatchers.Main) {
                                         trySend(Resource.Success(petDto.copy(images = finalImages).toDomain()))
@@ -172,14 +170,14 @@ class PetRepositoryImpl @Inject constructor(
     override fun getNearbyPets(lat: Double, lng: Double, radiusKm: Double): Flow<Resource<List<PetAd>>> = callbackFlow {
         trySend(Resource.Loading())
 
-        val centerHash = com.osia.petsos.utils.GeoUtils.encode(lat, lng, 10)
+        val centerHash = GeoUtils.encode(lat, lng, 10)
         // Adjust precision based on radius roughly
         val precision = when {
             radiusKm <= 5.0 -> 5
             radiusKm <= 20.0 -> 4
             else -> 3
         }
-        val searchHash = centerHash.substring(0, precision)
+        val searchHash = centerHash.take(precision)
         
         // Firestore StartAt/EndAt for Prefix
         val endHash = "$searchHash~"

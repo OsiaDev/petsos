@@ -24,6 +24,7 @@ class PetDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PetDetailUiState>(PetDetailUiState.Loading)
+
     val uiState: StateFlow<PetDetailUiState> = _uiState.asStateFlow()
 
     fun getPetDetails(petId: String) {
