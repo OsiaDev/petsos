@@ -116,7 +116,7 @@ fun ReportPetForm(
                 fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                     isFetchingLocation = false
                     if (location != null) {
-                        onLocationSelected(PetLocation(location.latitude, location.longitude, "Current Location"))
+                        onLocationSelected(PetLocation(location.latitude, location.longitude, ""))
                     }
                 }.addOnFailureListener {
                     isFetchingLocation = false

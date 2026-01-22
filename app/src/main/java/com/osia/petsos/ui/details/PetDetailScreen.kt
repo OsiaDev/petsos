@@ -384,7 +384,7 @@ fun PetDetailContent(
 
                         TextButton(onClick = {
                             val gmmIntentUri =
-                                "geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${pet.name})".toUri()
+                                "geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${Uri.encode("${pet.name} - ${pet.location.address}")})".toUri()
                             val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                             mapIntent.setPackage("com.google.android.apps.maps")
                             // Check if Maps is installed, otherwise let system handle it
@@ -435,7 +435,7 @@ fun PetDetailContent(
                                     onClick = {
                                         val gmmIntentUri =
                                             "geo:${pet.location.lat},${pet.location.lng}?q=${pet.location.lat},${pet.location.lng}(${
-                                                Uri.encode(pet.name)
+                                                Uri.encode("${pet.name} - ${pet.location.address}")
                                             })".toUri()
                                         val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
                                         mapIntent.setPackage("com.google.android.apps.maps")

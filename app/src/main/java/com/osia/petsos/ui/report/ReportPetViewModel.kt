@@ -237,8 +237,8 @@ class ReportPetViewModel @Inject constructor(
             isValid = false
         }
         
-        if (state.location == null) {
-             _uiState.update { it.copy(locationError = "Location is required") }
+        if (state.location == null || state.location.address.isBlank()) {
+             _uiState.update { it.copy(locationError = "Address is required") }
              isValid = false
         }
 
