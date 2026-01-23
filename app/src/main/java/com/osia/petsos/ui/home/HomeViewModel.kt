@@ -41,6 +41,9 @@ class HomeViewModel @Inject constructor(
 
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _isCardView = MutableStateFlow(true)
+    val isCardView: StateFlow<Boolean> = _isCardView.asStateFlow()
+
     init {
         fetchPets()
     }
@@ -51,6 +54,10 @@ class HomeViewModel @Inject constructor(
 
     fun onFilterSelected(filter: PetFilter) {
         _selectedFilter.value = filter
+    }
+
+    fun toggleViewType() {
+        _isCardView.value = !_isCardView.value
     }
 
     private var fetchJob: Job? = null

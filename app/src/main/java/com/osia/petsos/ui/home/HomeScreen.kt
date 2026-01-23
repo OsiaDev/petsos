@@ -3,7 +3,9 @@ package com.osia.petsos.ui.home
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -66,6 +68,7 @@ fun HomeScreen(
     val uiState by homeViewModel.uiState.collectAsState()
     val searchQuery by homeViewModel.searchQuery.collectAsState()
     val selectedFilter by homeViewModel.selectedFilter.collectAsState()
+    val isCardView by homeViewModel.isCardView.collectAsState()
 
     val currentUser by homeViewModel.currentUser.collectAsState(initial = null)
     val isRefreshing by homeViewModel.isRefreshing.collectAsState()
@@ -118,6 +121,8 @@ fun HomeScreen(
                     SearchBar(
                         query = searchQuery,
                         onQueryChange = homeViewModel::onSearchQueryChange,
+                        isCardView = isCardView,
+                        onToggleView = homeViewModel::toggleViewType,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 12.dp)
@@ -162,6 +167,7 @@ fun HomeScreen(
                     ) {
                         PetList(
                             pets = filteredPets,
+                            isCardView = isCardView,
                             onContactOwner = onContactOwner,
                             onViewDetails = onViewDetails,
                             modifier = Modifier.fillMaxSize()
@@ -249,6 +255,8 @@ fun HomeTopBar(onProfileClick: () -> Unit) {
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    isCardView: Boolean,
+    onToggleView: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -289,8 +297,7 @@ fun SearchBar(
 
         // Filter Button
         Surface(
-            modifier = Modifier
-                .size(48.dp),
+            modifier = Modifier.size(48.dp),
             shape = RoundedCornerShape(8.dp),
             color = SurfaceLight,
             onClick = { /* TODO: Open filter dialog */ }
@@ -302,6 +309,25 @@ fun SearchBar(
                 Icon(
                     imageVector = Icons.Default.FilterList,
                     contentDescription = "Filter",
+                    tint = TextSecondary
+                )
+            }
+        }
+
+        // View Toggle Button
+        Surface(
+            modifier = Modifier.size(48.dp),
+            shape = RoundedCornerShape(8.dp),
+            color = SurfaceLight,
+            onClick = onToggleView
+        ) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Icon(
+                    imageVector = if (isCardView) Icons.Default.ViewList else Icons.Default.GridView,
+                    contentDescription = "Toggle View",
                     tint = TextSecondary
                 )
             }
@@ -345,6 +371,7 @@ fun FilterChips(
 @Composable
 fun PetList(
     pets: List<PetAd>,
+    isCardView: Boolean,
     onContactOwner: (String) -> Unit,
     onViewDetails: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -360,11 +387,19 @@ fun PetList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(pets) { pet ->
-            PetCard(
-                pet = pet,
-                onContactOwner = { onContactOwner(pet.id) },
-                onViewDetails = { onViewDetails(pet.id) }
-            )
+            if (isCardView) {
+                PetCard(
+                    pet = pet,
+                    onContactOwner = { onContactOwner(pet.id) },
+                    onViewDetails = { onViewDetails(pet.id) }
+                )
+            } else {
+                PetHorizontalCard(
+                    pet = pet,
+                    onContactOwner = { onContactOwner(pet.id) },
+                    onViewDetails = { onViewDetails(pet.id) }
+                )
+            }
         }
     }
 }
@@ -659,5 +694,179 @@ fun HomeScreenPreview() {
 fun HomeScreenDarkPreview() {
     PetSOSTheme(darkTheme = true) {
         HomeScreen()
+    }
+}
+
+@Composable
+fun PetHorizontalCard(
+    pet: PetAd,
+    onContactOwner: () -> Unit,
+    onViewDetails: () -> Unit
+) {
+    Card(
+        onClick = onViewDetails,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 2.dp,
+                shape = RoundedCornerShape(12.dp),
+                ambientColor = Color.Black.copy(alpha = 0.05f),
+                spotColor = Color.Black.copy(alpha = 0.05f)
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.White
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Image
+            Box(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color.LightGray)
+            ) {
+                // Prioritize imageHeader (thumb) if available
+                val imagePath = pet.imageHeader ?: pet.images.firstOrNull()
+
+                val imageUrl = imagePath?.let { path ->
+                    FirebaseConfig.getStorageUrl(path)
+                }
+
+                if (imageUrl != null) {
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(imageUrl)
+                            .crossfade(true)
+                            .diskCachePolicy(CachePolicy.ENABLED)
+                            .build(),
+                        contentDescription = "Pet Image",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = R.drawable.ic_launcher_foreground)
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Pets, contentDescription = null, tint = Color.Gray)
+                    }
+                }
+            }
+
+            // Content
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                // Header: Name and Status
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = pet.name ?: "Unknown",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        ),
+                        color = TextPrimary
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(percent = 50),
+                        color = when (pet.type) {
+                            AdvertisementType.LOST -> SecondaryOrange.copy(alpha = 0.1f)
+                            AdvertisementType.FOUND -> PrimaryPurple.copy(alpha = 0.1f)
+                        }
+                    ) {
+                        Text(
+                            text = pet.type.name,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelSmall.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 10.sp
+                            ),
+                            color = when (pet.type) {
+                                AdvertisementType.LOST -> SecondaryOrange
+                                AdvertisementType.FOUND -> PrimaryPurple
+                            }
+                        )
+                    }
+                }
+
+                Text(
+                    text = pet.breed ?: "Unknown Breed",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+
+                // Location
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = TextSecondary
+                    )
+                    Text(
+                        text = pet.location.address,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = TextSecondary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                }
+                
+                // Time (Placeholder)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = TextSecondary
+                    )
+                    Text(
+                        text = "Recently", // Placeholder
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                        color = TextSecondary
+                    )
+                }
+            }
+            
+            // Action Icon
+            Column(
+                verticalArrangement = Arrangement.Bottom,
+                modifier = Modifier.align(Alignment.Bottom)
+            ) {
+                 Surface(
+                    shape = RoundedCornerShape(percent = 50),
+                    color = PrimaryPurple.copy(alpha = 0.1f),
+                    modifier = Modifier.size(32.dp),
+                    onClick = onViewDetails
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                         Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Message, // Using Message icon as in reference (chat_bubble) or Info
+                            contentDescription = "Details",
+                            tint = PrimaryPurple,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            }
+        }
     }
 }
