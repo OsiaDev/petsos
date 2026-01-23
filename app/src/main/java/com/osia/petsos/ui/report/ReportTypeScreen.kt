@@ -129,7 +129,7 @@ fun ReportTypeContent(
                 title = "I Lost a Pet",
                 description = "Alert the community and get immediate help tracking down your pet.",
                 buttonText = "Report Lost",
-                iconResId = R.drawable.ic_launcher_foreground, // Placeholder icon, replace with resource if available
+                iconResId = R.mipmap.ic_launcher, // Placeholder icon, replace with resource if available
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBcL1smncXNPkhMRsrQxbwpIb3maLlktuWft-kyx9tiS5Gs4K6ueVTlhA9gA1IBwLNAcffibgK9nJv8Ig7_x-2c2E46yig6mEXV5QwzoDQIijRbGiLRS7twnfs4OOaPIPD7RFFVSVnEnH60BRcHeK_5prvlaj2WY8Lp4gk2NIAvhWxg8DbFkMTXF-sbmAQ-gg6XuX1NLVE8Ivz1zQwiZkK0Ng0sRpZk9t1q1WZZini7xy7Nd_QrWgW8ixrsnNpRzwwyuTvh53ONLf0",
                 buttonColor = ReportPurple,
                 iconBgColor = ReportPurple.copy(alpha = 0.1f),
@@ -144,7 +144,7 @@ fun ReportTypeContent(
                 title = "I Found a Pet",
                 description = "Secure the pet and help reunite them with their worried owners.",
                 buttonText = "Report Found",
-                iconResId = R.drawable.ic_launcher_foreground, // Placeholder
+                iconResId = R.mipmap.ic_launcher, // Placeholder
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDb5JMDATJwy17_ewybHTLT7cxEPl-RmeEZPx3s4KNo-0lIEj3A7L_Ka7Sme-Pqgr8xpZHMdfxPMMO7nlkbtwnUrjWOYqkUD-IGw4md2T_Yn3oDsIcHTQwHUkJMOrXYKV4o1gKjn2M-XbUu1BkgjAQYTumcu0W2TGCuXoMUkaCL58Dx5PPZmj_g_QpB5TqWVzU4uumefnODlLTJjguFL-IHLX7qwTWkKZ5QhSG2T6_F6pf-9EXSNk79LOtvcQ8EXGM83CgH5Z77SsE",
                 buttonColor = ReportGold,
                 iconBgColor = ReportGold.copy(alpha = 0.2f),
@@ -220,7 +220,7 @@ fun ReportOptionCard(
                     // In real implementation, use actual icon resource
                     Icon(
                          // Using default icon as placeholder since we don't have the exact SVGs
-                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
+                        painter = painterResource(id = iconResId),
                         contentDescription = null,
                         tint = iconTint
                     )

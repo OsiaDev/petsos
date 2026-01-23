@@ -453,7 +453,7 @@ fun PetCard(
                         contentDescription = "Pet Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = painterResource(id = R.drawable.ic_launcher_foreground) // Placeholder
+                        error = painterResource(id = R.mipmap.ic_launcher)
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -750,7 +750,7 @@ fun PetHorizontalCard(
                         contentDescription = "Pet Image",
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop,
-                        error = painterResource(id = R.drawable.ic_launcher_foreground)
+                        error = painterResource(id = R.mipmap.ic_launcher)
                     )
                 } else {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
