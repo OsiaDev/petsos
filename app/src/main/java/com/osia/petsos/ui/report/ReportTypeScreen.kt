@@ -39,6 +39,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.osia.petsos.R
+import com.osia.petsos.ui.theme.ReportGold
+import com.osia.petsos.ui.theme.ReportGoldDark
+import com.osia.petsos.ui.theme.ReportIconBackground
+import com.osia.petsos.ui.theme.ReportPurple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,14 +105,14 @@ fun ReportTypeContent(
                     text = "Choose Report Type",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF713a8d) // Primary from design
+                    color = ReportPurple // Primary from design
                 )
                 IconButton(
                     onClick = onDismiss,
                     modifier = Modifier
                         .size(40.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFF7F6F7)) // Background light
+                        .background(ReportIconBackground) // Background light
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -127,9 +131,9 @@ fun ReportTypeContent(
                 buttonText = "Report Lost",
                 iconResId = R.drawable.ic_launcher_foreground, // Placeholder icon, replace with resource if available
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuBcL1smncXNPkhMRsrQxbwpIb3maLlktuWft-kyx9tiS5Gs4K6ueVTlhA9gA1IBwLNAcffibgK9nJv8Ig7_x-2c2E46yig6mEXV5QwzoDQIijRbGiLRS7twnfs4OOaPIPD7RFFVSVnEnH60BRcHeK_5prvlaj2WY8Lp4gk2NIAvhWxg8DbFkMTXF-sbmAQ-gg6XuX1NLVE8Ivz1zQwiZkK0Ng0sRpZk9t1q1WZZini7xy7Nd_QrWgW8ixrsnNpRzwwyuTvh53ONLf0",
-                buttonColor = Color(0xFF713a8d),
-                iconBgColor = Color(0xFF713a8d).copy(alpha = 0.1f),
-                iconTint = Color(0xFF713a8d),
+                buttonColor = ReportPurple,
+                iconBgColor = ReportPurple.copy(alpha = 0.1f),
+                iconTint = ReportPurple,
                 onClick = onReportLostClick
             )
 
@@ -142,9 +146,9 @@ fun ReportTypeContent(
                 buttonText = "Report Found",
                 iconResId = R.drawable.ic_launcher_foreground, // Placeholder
                 imageUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuDb5JMDATJwy17_ewybHTLT7cxEPl-RmeEZPx3s4KNo-0lIEj3A7L_Ka7Sme-Pqgr8xpZHMdfxPMMO7nlkbtwnUrjWOYqkUD-IGw4md2T_Yn3oDsIcHTQwHUkJMOrXYKV4o1gKjn2M-XbUu1BkgjAQYTumcu0W2TGCuXoMUkaCL58Dx5PPZmj_g_QpB5TqWVzU4uumefnODlLTJjguFL-IHLX7qwTWkKZ5QhSG2T6_F6pf-9EXSNk79LOtvcQ8EXGM83CgH5Z77SsE",
-                buttonColor = Color(0xFFD4B883),
-                iconBgColor = Color(0xFFD4B883).copy(alpha = 0.2f),
-                iconTint = Color(0xFF9c8456),
+                buttonColor = ReportGold,
+                iconBgColor = ReportGold.copy(alpha = 0.2f),
+                iconTint = ReportGoldDark,
                 onClick = onReportFoundClick
             )
 
@@ -155,21 +159,21 @@ fun ReportTypeContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(16.dp))
-                    .background(Color(0xFF713a8d).copy(alpha = 0.05f))
+                    .background(ReportPurple.copy(alpha = 0.05f))
                     .padding(16.dp),
                 verticalAlignment = Alignment.Top
             ) {
                 Icon(
                     imageVector = Icons.Outlined.Info,
                     contentDescription = null,
-                    tint = Color(0xFF713a8d),
+                    tint = ReportPurple,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "Your location will be used to notify nearby users instantly. Please ensure your GPS is enabled for faster response.",
                     fontSize = 12.sp,
-                    color = Color(0xFF713a8d),
+                    color = ReportPurple,
                     fontWeight = FontWeight.Medium,
                     lineHeight = 16.sp
                 )
@@ -193,7 +197,7 @@ fun ReportOptionCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(elevation = 10.dp, spotColor = Color(0xFF713a8d).copy(alpha = 0.1f), shape = RoundedCornerShape(32.dp))
+            .shadow(elevation = 10.dp, spotColor = ReportPurple.copy(alpha = 0.1f), shape = RoundedCornerShape(32.dp))
             .clip(RoundedCornerShape(32.dp))
             .background(Color.White)
             .clickable(onClick = onClick)
@@ -226,7 +230,7 @@ fun ReportOptionCard(
                     text = title,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF713a8d),
+                    color = ReportPurple,
                     lineHeight = 24.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
@@ -272,4 +276,5 @@ fun ReportOptionCard(
                 .background(Color.Gray) // Placeholder while loading
         )
     }
+
 }

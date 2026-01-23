@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -107,7 +108,7 @@ fun FullScreenImageGallery(
                         .padding(horizontal = 12.dp, vertical = 6.dp)
                 ) {
                     val currentActualPage = (pagerState.currentPage % images.size) + 1
-                     androidx.compose.material3.Text(
+                     Text(
                         text = "$currentActualPage / ${images.size}",
                         color = Color.White
                     )

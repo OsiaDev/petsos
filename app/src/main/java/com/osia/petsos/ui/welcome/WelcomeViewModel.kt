@@ -17,4 +17,5 @@ class WelcomeViewModel @Inject constructor(
             dataStoreRepository.saveOnBoardingState(completed = true)
         }
     }
+
 }

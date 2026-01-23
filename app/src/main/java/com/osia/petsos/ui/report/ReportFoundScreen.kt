@@ -3,7 +3,7 @@ package com.osia.petsos.ui.report
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.osia.petsos.domain.model.AdvertisementType
 
@@ -42,4 +42,5 @@ fun ReportFoundScreen(
         onBackClick = onBackClick,
         onErrorDismiss = viewModel::errorShown
     )
+
 }

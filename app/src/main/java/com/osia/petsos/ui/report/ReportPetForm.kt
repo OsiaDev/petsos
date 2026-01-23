@@ -46,11 +46,13 @@ import com.osia.petsos.domain.model.PetCategory
 import com.osia.petsos.domain.model.PetLocation
 import com.google.android.gms.maps.model.LatLng
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material3.HorizontalDivider
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import com.google.android.gms.location.LocationServices
+import com.osia.petsos.ui.theme.BrandPurple
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -123,7 +125,7 @@ fun ReportPetForm(
                 }.addOnFailureListener {
                     isFetchingLocation = false
                 }
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) {
                 isFetchingLocation = false // Should not happen if permission granted
             }
         }
@@ -211,7 +213,7 @@ fun ReportPetForm(
                     .height(56.dp),
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF6B46C1)
+                    containerColor = BrandPurple
                 )
             ) {
                 if (uiState.isLoading) {
@@ -284,9 +286,9 @@ fun ReportPetForm(
                                     Icon(
                                         imageVector = Icons.Default.AddAPhoto, 
                                         contentDescription = "Add",
-                                        tint = Color(0xFF6B46C1)
+                                        tint = BrandPurple
                                     )
-                                    Text("Add", fontSize = 10.sp, color = Color(0xFF6B46C1), fontWeight = FontWeight.Bold)
+                                    Text("Add", fontSize = 10.sp, color = BrandPurple, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -368,7 +370,7 @@ fun ReportPetForm(
                             },
                             shape = RoundedCornerShape(12.dp),
                             colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = Color(0xFF6B46C1),
+                                selectedContainerColor = BrandPurple,
                                 selectedLabelColor = Color.White
                             )
                         )
@@ -424,7 +426,7 @@ fun ReportPetForm(
                         Switch(
                             checked = uiState.hasReward,
                             onCheckedChange = onRewardChanged,
-                            colors = SwitchDefaults.colors(checkedThumbColor = Color(0xFF6B46C1), checkedTrackColor = Color(0xFF6B46C1).copy(alpha = 0.5f))
+                            colors = SwitchDefaults.colors(checkedThumbColor = BrandPurple, checkedTrackColor = BrandPurple.copy(alpha = 0.5f))
                         )
                     }
                     
@@ -457,7 +459,7 @@ fun ReportPetForm(
             // Location
             item {
                 // Address Search UI (Visual only for now, would need Places API)
-                val locationText = if (uiState.location?.lat != 0.0) 
+                val locationText = if (uiState.location?.lat != 0.0)
                     "${uiState.location?.lat}, ${uiState.location?.lng}" 
                     else ""
 
@@ -487,7 +489,7 @@ fun ReportPetForm(
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF6B46C1))
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandPurple)
                 ) {
                     if (isFetchingLocation) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
@@ -572,7 +574,7 @@ fun ReportPetForm(
             }
 
             item {
-                Divider()
+                HorizontalDivider()
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "Contact Details",

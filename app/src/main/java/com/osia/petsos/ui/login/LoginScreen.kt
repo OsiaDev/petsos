@@ -52,6 +52,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.osia.petsos.core.config.FirebaseConfig
 import com.osia.petsos.ui.theme.BackgroundLight
 import com.osia.petsos.ui.theme.PrimaryPurple
+import com.osia.petsos.ui.theme.LoginTitle
 import kotlinx.coroutines.launch
 
 @Composable
@@ -154,7 +155,7 @@ fun LoginScreen(
                     text = "Help them\nfind home.",
                     fontSize = 32.sp,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF161019),
+                    color = LoginTitle,
                     textAlign = TextAlign.Center,
                     lineHeight = 40.sp
                 )
@@ -165,7 +166,7 @@ fun LoginScreen(
                     text = "Join our community to help pets find their way home.",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF161019).copy(alpha = 0.7f),
+                    color = LoginTitle.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center,
                     modifier = Modifier.width(240.dp)
                 )

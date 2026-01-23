@@ -553,4 +553,5 @@ fun DetailItem(
             color = TextPrimary
         )
     }
+
 }

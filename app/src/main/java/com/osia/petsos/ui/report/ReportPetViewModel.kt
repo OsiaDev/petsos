@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.osia.petsos.domain.model.AdvertisementType
 import com.osia.petsos.domain.model.PetAd
+import com.osia.petsos.domain.model.PetAdStatus
 import com.osia.petsos.domain.model.PetCategory
 import com.osia.petsos.domain.model.PetLocation
 import com.osia.petsos.domain.repository.AuthRepository
@@ -193,7 +194,7 @@ class ReportPetViewModel @Inject constructor(
                 rewardAmount = if (state.hasReward) state.rewardAmount.toIntOrNull() else null,
                 location = state.location ?: PetLocation(),
                 userId = currentUser.uid,
-                status = com.osia.petsos.domain.model.PetAdStatus.ACTIVE,
+                status = PetAdStatus.ACTIVE,
                 phones = if (state.contactPhone.isNotBlank()) listOf(state.contactPhone.trim()) else emptyList(),
                 userName = state.contactName,
                 userEmail = currentUser.email ?: ""
@@ -258,4 +259,5 @@ class ReportPetViewModel @Inject constructor(
     fun errorShown() {
         _uiState.update { it.copy(error = null) }
     }
+
 }

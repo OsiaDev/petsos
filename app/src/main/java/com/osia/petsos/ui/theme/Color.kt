@@ -53,3 +53,27 @@ val BlackAlpha10 = Color(0x1A000000)
 val BlackAlpha20 = Color(0x33000000)
 val WhiteAlpha10 = Color(0x1AFFFFFF)
 val WhiteAlpha20 = Color(0x33FFFFFF)
+
+// Material Theme Extended Colors
+val OnPrimaryContainerLight = Color(0xFF21005D)
+val SecondaryContainerLight = Color(0xFFFFEDD5)
+val OnSecondaryContainerLight = Color(0xFF7C2D12)
+
+val Tertiary = Color(0xFF7D5260)
+val TertiaryContainer = Color(0xFFFFD8E4)
+val OnTertiaryContainer = Color(0xFF31111D)
+
+val ErrorContainer = Color(0xFFFFDAD6)
+val OnErrorContainer = Color(0xFF410002)
+
+val PrimaryContainerDark = Color(0xFF4F378B)
+val SecondaryContainerDark = Color(0xFF9A3412)
+val SurfaceVariantDark = Color(0xFF3F3F46)
+
+// Report Screen Colors
+val ReportPurple = Color(0xFF713A8D)
+val ReportGold = Color(0xFFD4B883)
+val ReportGoldDark = Color(0xFF9C8456)
+val ReportIconBackground = Color(0xFFF7F6F7)
+val BrandPurple = Color(0xFF6B46C1)
+val LoginTitle = Color(0xFF161019)

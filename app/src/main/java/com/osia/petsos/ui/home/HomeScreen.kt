@@ -3,7 +3,6 @@ package com.osia.petsos.ui.home
 
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +19,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
 import android.content.res.Configuration
+import androidx.compose.material.icons.automirrored.filled.ViewList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -326,7 +326,7 @@ fun SearchBar(
                 modifier = Modifier.fillMaxSize()
             ) {
                 Icon(
-                    imageVector = if (isCardView) Icons.Default.ViewList else Icons.Default.GridView,
+                    imageVector = if (isCardView) Icons.AutoMirrored.Filled.ViewList else Icons.Default.GridView,
                     contentDescription = "Toggle View",
                     tint = TextSecondary
                 )
@@ -869,4 +869,5 @@ fun PetHorizontalCard(
             }
         }
     }
+
 }

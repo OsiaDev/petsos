@@ -3,8 +3,6 @@ package com.osia.petsos.ui.report
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +46,7 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
+import com.osia.petsos.ui.theme.BrandPurple
 
 @Composable
 fun LocationSelectionMap(
@@ -90,7 +88,7 @@ fun LocationSelectionMap(
                         }
                     }
                 }
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) {
                 // Ignore
             }
         }
@@ -131,7 +129,7 @@ fun LocationSelectionMap(
                 Icon(
                     imageVector = Icons.Default.Place,
                     contentDescription = "Center",
-                    tint = Color(0xFF6B46C1), // PrimaryPurple
+                    tint = BrandPurple, // PrimaryPurple
                     modifier = Modifier
                         .size(48.dp)
                         .align(Alignment.Center)
@@ -176,7 +174,7 @@ fun LocationSelectionMap(
                         .align(Alignment.CenterEnd)
                         .padding(end = 16.dp, bottom = 100.dp), // Above Confirm button
                     containerColor = Color.White,
-                    contentColor = Color(0xFF6B46C1)
+                    contentColor = BrandPurple
                 ) {
                     Icon(Icons.Default.MyLocation, contentDescription = "My Location")
                 }
@@ -199,7 +197,7 @@ fun LocationSelectionMap(
                             .padding(16.dp),
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF6B46C1)
+                            containerColor = BrandPurple
                         )
                     ) {
                         Icon(Icons.Default.Check, contentDescription = null)
@@ -213,4 +211,5 @@ fun LocationSelectionMap(
             }
         }
     }
+
 }

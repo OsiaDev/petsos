@@ -10,22 +10,22 @@ private val LightColorScheme = lightColorScheme(
     primary = PrimaryPurple,  // #7C3AED
     onPrimary = Color.White,
     primaryContainer = PrimaryPurpleLight,  // #F3E8FF
-    onPrimaryContainer = Color(0xFF21005D),
+    onPrimaryContainer = OnPrimaryContainerLight,
 
     secondary = SecondaryOrange,  // #FB923C
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFFFEDD5),
-    onSecondaryContainer = Color(0xFF7C2D12),
+    secondaryContainer = SecondaryContainerLight,
+    onSecondaryContainer = OnSecondaryContainerLight,
 
-    tertiary = Color(0xFF7D5260),
+    tertiary = Tertiary,
     onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFFFD8E4),
-    onTertiaryContainer = Color(0xFF31111D),
+    tertiaryContainer = TertiaryContainer,
+    onTertiaryContainer = OnTertiaryContainer,
 
     error = ErrorLight,
     onError = Color.White,
-    errorContainer = Color(0xFFFFDAD6),
-    onErrorContainer = Color(0xFF410002),
+    errorContainer = ErrorContainer,
+    onErrorContainer = OnErrorContainer,
 
     background = BackgroundLight,  // #F9FAFB
     onBackground = TextPrimary,  // #1F2937
@@ -35,27 +35,27 @@ private val LightColorScheme = lightColorScheme(
     surfaceVariant = SurfaceLight,  // #F3F4F6
     onSurfaceVariant = TextSecondary,  // #6B7280
 
-    outline = Color(0xFFD1D5DB),
-    outlineVariant = Color(0xFFE5E7EB),
+    outline = Gray300,
+    outlineVariant = Gray200,
 )
 
 private val DarkColorScheme = darkColorScheme(
     primary = PrimaryPurple,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFF4F378B),
+    primaryContainer = PrimaryContainerDark,
     onPrimaryContainer = PrimaryPurpleLight,
 
     secondary = SecondaryOrange,
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFF9A3412),
-    onSecondaryContainer = Color(0xFFFFEDD5),
+    secondaryContainer = SecondaryContainerDark,
+    onSecondaryContainer = SecondaryContainerLight,
 
     background = BackgroundDark,  // #18181B
     onBackground = TextDarkPrimary,  // #F4F4F5
 
     surface = SurfaceDark,  // #27272A
     onSurface = TextDarkPrimary,  // #F4F4F5
-    surfaceVariant = Color(0xFF3F3F46),
+    surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = TextSecondaryDark,  // #A1A1AA
 )
 

@@ -13,9 +13,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import com.osia.petsos.ui.details.PetDetailScreen
+import com.osia.petsos.ui.login.LoginScreen
 import com.osia.petsos.ui.profile.ProfileScreen
 import com.osia.petsos.ui.profile.ProfileViewModel
 import com.osia.petsos.ui.profile.ProfileUiState
+import com.osia.petsos.ui.welcome.WelcomeViewModel
 
 /**
  * Composable principal de navegación de la aplicación
@@ -33,7 +36,7 @@ fun AppNavigation(
     ) {
         // Pantalla de bienvenida
         composable(route = Screen.Welcome.route) {
-            val welcomeViewModel: com.osia.petsos.ui.welcome.WelcomeViewModel = hiltViewModel()
+            val welcomeViewModel: WelcomeViewModel = hiltViewModel()
             WelcomeScreen(
                 onGetStartedClick = {
                     welcomeViewModel.completeOnboarding()
@@ -51,7 +54,7 @@ fun AppNavigation(
 
         // Pantalla de login
         composable(route = Screen.Login.route) {
-            com.osia.petsos.ui.login.LoginScreen(
+            LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Welcome.route) { inclusive = true }
@@ -125,7 +128,7 @@ fun AppNavigation(
         composable(route = Screen.PetDetail.route) { backStackEntry ->
             val petId = backStackEntry.arguments?.getString("petId")
             if (petId != null) {
-                com.osia.petsos.ui.details.PetDetailScreen(
+                PetDetailScreen(
                     petId = petId,
                     onNavigateBack = { navController.popBackStack() },
                     onContactOwner = { ownerId ->
@@ -156,4 +159,5 @@ fun AppNavigation(
             // TODO: Implementar SettingsScreen
         }
     }
+
 }
