@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "608658580372",
+    "project_id": "petsos-project-app",
+    "storage_bucket": "petsos-project-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:608658580372:android:192236cf535c34bc80e581",
+        "android_client_info": {
+          "package_name": "com.osia.petsos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "608658580372-6855l2ldr918f225d188gsbsev94avck.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.osia.petsos",
+            "certificate_hash": "64c251e95c26303fb569090d284ff0fe9a0a652e"
+          }
+        },
+        {
+          "client_id": "608658580372-0csgirj6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8GsDF19TOj529m9V9LvCntSm1C-rIZ2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "608658580372-0csgirj6kgmhe4o252bovrvkb0jflj20.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
