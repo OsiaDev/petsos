@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material3.*
 
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -60,7 +61,8 @@ fun HomeScreen(
     onNavigateToReportFound: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
     onContactOwner: (String) -> Unit = {},
-    onViewDetails: (String) -> Unit = {}
+    onViewDetails: (String) -> Unit = {},
+    mapViewModel: com.osia.petsos.ui.map.MapViewModel = hiltViewModel()
 ) {
     // Obtain ViewModel if not provided (using hiltViewModel() inside body)
     val homeViewModel: HomeViewModel = viewModel
@@ -94,6 +96,7 @@ fun HomeScreen(
     }
 
     var showReportTypeSheet by remember { mutableStateOf(false) }
+    var currentTab by remember { mutableStateOf(BottomNavItem.HOME) }
 
     Box(
         modifier = Modifier
@@ -138,40 +141,51 @@ fun HomeScreen(
             }
 
             // Content
-            when (val state = uiState) {
-                is HomeUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = PrimaryPurple)
+            if (currentTab == BottomNavItem.MAP) {
+                com.osia.petsos.ui.map.MapContent(
+                    viewModel = mapViewModel,
+                    onNavigateToDetails = onViewDetails,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 80.dp) // Space for bottom bar
+                )
+            } else {
+                // Home Content (Pet List)
+                when (val state = uiState) {
+                    is HomeUiState.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = PrimaryPurple)
+                        }
                     }
-                }
-                is HomeUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(text = "Error: ${state.message}", color = Color.Red)
+                    is HomeUiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(text = "Error: ${state.message}", color = Color.Red)
+                        }
                     }
-                }
-                is HomeUiState.Success -> {
-                    val filteredPets = state.pets.filter { pet ->
-                        (selectedFilter == PetFilter.ALL ||
-                                (selectedFilter == PetFilter.LOST && pet.type == AdvertisementType.LOST) ||
-                                (selectedFilter == PetFilter.FOUND && pet.type == AdvertisementType.FOUND)) &&
-                                (searchQuery.isBlank() || pet.name?.contains(searchQuery, ignoreCase = true) == true ||
-                                        pet.breed?.contains(searchQuery, ignoreCase = true) == true)
-                    }
+                    is HomeUiState.Success -> {
+                        val filteredPets = state.pets.filter { pet ->
+                            (selectedFilter == PetFilter.ALL ||
+                                    (selectedFilter == PetFilter.LOST && pet.type == AdvertisementType.LOST) ||
+                                    (selectedFilter == PetFilter.FOUND && pet.type == AdvertisementType.FOUND)) &&
+                                    (searchQuery.isBlank() || pet.name?.contains(searchQuery, ignoreCase = true) == true ||
+                                            pet.breed?.contains(searchQuery, ignoreCase = true) == true)
+                        }
 
-                    PullToRefreshBox(
-                        isRefreshing = isRefreshing,
-                        onRefresh = { homeViewModel.refresh() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        PetList(
-                            pets = filteredPets,
-                            isCardView = isCardView,
-                            onContactOwner = onContactOwner,
-                            onViewDetails = onViewDetails,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                        PullToRefreshBox(
+                            isRefreshing = isRefreshing,
+                            onRefresh = { homeViewModel.refresh() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            PetList(
+                                pets = filteredPets,
+                                isCardView = isCardView,
+                                onContactOwner = onContactOwner,
+                                onViewDetails = onViewDetails,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
             }
@@ -179,11 +193,11 @@ fun HomeScreen(
 
         // Bottom Navigation Bar - Fixed at bottom con WindowInsets
         BottomNavigationBar(
-            selectedTab = BottomNavItem.HOME,
+            selectedTab = currentTab,
             onTabSelected = { tab ->
                 when (tab) {
-                    BottomNavItem.HOME -> { /* Already here */ }
-                    BottomNavItem.ALERTS -> onNavigateToAlerts()
+                    BottomNavItem.HOME -> currentTab = BottomNavItem.HOME
+                    BottomNavItem.MAP -> currentTab = BottomNavItem.MAP
                     BottomNavItem.ADD -> {
                         if (currentUser != null) {
                             showReportTypeSheet = true
@@ -675,7 +689,7 @@ enum class PetFilter(val label: String) {
 
 enum class BottomNavItem(val label: String, val icon: ImageVector) {
     HOME("Home", Icons.Default.Home),
-    ALERTS("Alerts", Icons.Default.Notifications),
+    MAP("Map", Icons.Default.Map),
     ADD("Add", Icons.Default.Add),
     MESSAGES("Messages", Icons.AutoMirrored.Filled.Message),
     PROFILE("Profile", Icons.Default.Person)
